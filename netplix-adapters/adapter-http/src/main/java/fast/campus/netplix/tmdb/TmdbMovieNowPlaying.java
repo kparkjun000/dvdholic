@@ -53,12 +53,4 @@ public class TmdbMovieNowPlaying {
                 .releasedAt(releaseDate)
                 .build();
     }
-    
-    // Check if overview contains Korean characters
-    public boolean hasKoreanOverview() {
-        if (overview == null || overview.isEmpty()) {
-            return false;
-        }
-        return overview.matches(".*[가-힣]+.*");
-    }
 }
