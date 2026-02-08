@@ -1,11 +1,11 @@
 tmdb:
   auth:
-    api-key: edfd92ce3581d88f803092a607e9a207
-    access-token: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlZGZkOTJjZTM1ODFkODhmODAzMDkyYTYwN2U5YTIwNyIsIm5iZiI6MTcyNDc3MDUzMi4xMzc0MTEsInN1YiI6IjY2Y2RlNzY3YWU3ZTYyMDgxMGM0MjNkNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.7k83fwKmyXcJ9ehVBz2kbnjqFYZZgTQb_4_twXUzqEE
+    api-key: 486d0db4fa8e48a014a6d0ca36c98adb
+    access-token: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0ODZkMGRiNGZhOGU0OGEwMTRhNmQwY2EzNmM5OGFkYiIsIm5iZiI6MTc3MDMxNzM2NS44NzAwMDAxLCJzdWIiOiI2OTg0ZTYzNTc2Yjc5ODVlYjY5OTk2MjIiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.DmCGiEckkFtRqVIS2isi7F6eGQrikDe_Vyfz93ylTmA
 
   api:
     movie-lists:
-      now-playing: https://api.themoviedb.org/3/movie/now_playing
+      now-playing: https://api.themoviedb.org/3/discover/movie?api_key=486d0db4fa8e48a014a6d0ca36c98adb&with_release_type=5
       popular: https://api.themoviedb.org/3/movie/popular
       top-rated: https://api.themoviedb.org/3/movie/top_rated
       upcoming: https://api.themoviedb.org/3/movie/upcoming
