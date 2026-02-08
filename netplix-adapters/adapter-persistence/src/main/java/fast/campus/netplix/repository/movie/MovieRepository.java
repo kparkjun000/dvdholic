@@ -39,7 +39,7 @@ public class MovieRepository implements PersistenceMoviePort {
         Optional<MovieEntity> byMovieName = movieJpaRepository.findByMovieName(netplixMovie.getMovieName());
 
         if (byMovieName.isEmpty()) {
-            log.info("신규 영화 추가={}", netplixMovie.getMovieName());
+            log.info("Adding new movie: {}", netplixMovie.getMovieName());
             movieJpaRepository.save(entity);
             return entity.getMovieId();
         }

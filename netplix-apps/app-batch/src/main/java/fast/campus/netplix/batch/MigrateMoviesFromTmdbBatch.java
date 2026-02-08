@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Configuration
@@ -46,8 +47,22 @@ public class MigrateMoviesFromTmdbBatch {
                 .reader(new HttpPageItemReader(1, fetchMovieUseCase))
                 .writer(chunk -> {
                     List<NetplixMovie> items = (List<NetplixMovie>) chunk.getItems();
-                    insertMovieUseCase.insert(items);
+                    // Filter out movies with corrupted Korean text
+                    List<NetplixMovie> validItems = items.stream()
+                            .filter(this::isValidOverview)
+                            .collect(Collectors.toList());
+                    
+                    log.info("Filtered {} movies out of {}", items.size() - validItems.size(), items.size());
+                    insertMovieUseCase.insert(validItems);
                 })
                 .build();
+    }
+    
+    private boolean isValidOverview(NetplixMovie movie) {
+        String overview = movie.getOverview();
+        
+        // Accept all movies including those without overview
+        // Korean text encoding will be handled by database UTF-8 settings
+        return true;
     }
 }

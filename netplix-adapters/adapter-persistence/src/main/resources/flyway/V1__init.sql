@@ -94,7 +94,7 @@ CREATE TABLE `netplix`.`movies`
     MOVIE_NAME  VARCHAR(255) NOT NULL COMMENT '영화 명',
     IS_ADULT    TINYINT(1) COMMENT '성인영화 여부',
     GENRE       VARCHAR(255) COMMENT '장르',
-    OVERVIEW    VARCHAR(255) COMMENT '설명',
+    OVERVIEW    TEXT COMMENT '설명',
     RELEASED_AT VARCHAR(255) COMMENT '출시일자',
 
     CREATED_AT  DATETIME     NOT NULL COMMENT '생성일자',
@@ -103,7 +103,7 @@ CREATE TABLE `netplix`.`movies`
     MODIFIED_BY VARCHAR(50)  NOT NULL COMMENT '수정자',
 
     PRIMARY KEY (MOVIE_ID)
-);
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `netplix`.`user_movie_likes`;
 CREATE TABLE `netplix`.`user_movie_likes`

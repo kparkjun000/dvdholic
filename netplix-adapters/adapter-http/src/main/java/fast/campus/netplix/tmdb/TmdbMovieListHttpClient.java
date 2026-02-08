@@ -10,9 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -29,13 +27,8 @@ public class TmdbMovieListHttpClient implements TmdbMoviePort {
 
         TmdbResponse object = ObjectMapperUtil.toObject(request, TmdbResponse.class);
 
-        // Filter movies with Korean overview only
-        List<TmdbMovieNowPlaying> koreanMovies = object.getResults().stream()
-                .filter(TmdbMovieNowPlaying::hasKoreanOverview)
-                .collect(Collectors.toList());
-
         return new NetplixPageableMovies(
-                koreanMovies.stream().map(TmdbMovieNowPlaying::toDomain).toList(),
+                object.getResults().stream().map(TmdbMovieNowPlaying::toDomain).toList(),
                 Integer.parseInt(object.getPage()),
                 (Integer.parseInt(object.getTotal_pages())) - page != 0
         );

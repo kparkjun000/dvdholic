@@ -62,7 +62,7 @@ public class MovieEntity extends MutableBaseEntity {
 
     private static String getSubstrOverview(String overview) {
         if (StringUtils.isBlank(overview)) {
-            return "별도의 설명이 존재하지 않습니다.";
+            return "No description available.";
         }
 
         return overview.substring(0, Math.min(overview.length(), 200));
