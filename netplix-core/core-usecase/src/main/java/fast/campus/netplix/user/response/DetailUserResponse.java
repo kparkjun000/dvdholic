@@ -8,6 +8,7 @@ public record DetailUserResponse(
         String username,
         String password,
         String email,
-        String phone
+        String phone,
+        String role
 ) {
 }

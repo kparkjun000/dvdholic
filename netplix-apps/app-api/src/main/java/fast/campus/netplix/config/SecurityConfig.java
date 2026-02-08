@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -36,6 +37,10 @@ public class SecurityConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
         httpSecurity.formLogin(AbstractHttpConfigurer::disable);
         httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+        
+        // JWT 기반 인증이므로 세션을 사용하지 않음 (Stateless)
+        httpSecurity.sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         httpSecurity.authorizeHttpRequests(a ->
                 a.requestMatchers("/",
@@ -44,8 +49,19 @@ public class SecurityConfig {
                                 "/api/v1/auth/**"
                         ).permitAll()
                         .anyRequest().authenticated());
+        
+        // OAuth2 로그인 설정 (카카오 로그인용)
         httpSecurity.oauth2Login(oauth2 -> oauth2
                 .failureUrl("/login?error=true")
+        );
+        
+        // 인증 실패 시 예외 처리
+        httpSecurity.exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"code\":401,\"message\":\"Unauthorized\"}");
+                })
         );
 
         httpSecurity.userDetailsService(netplixUserDetailsService);

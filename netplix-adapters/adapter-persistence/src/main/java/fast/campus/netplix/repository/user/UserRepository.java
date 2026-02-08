@@ -26,8 +26,28 @@ public class UserRepository implements SearchUserPort, InsertUserPort {
     @Override
     @Transactional(readOnly = true)
     public Optional<NetplixUser> findByEmail(String email) {
-        return userJpaRepository.findByEmail(email)
-                .map(UserEntity::toDomain);
+        Optional<UserEntity> userEntityOptional = userJpaRepository.findByEmail(email);
+        if (userEntityOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        UserEntity userEntity = userEntityOptional.get();
+        
+        // 사용자의 구독 정보를 조회하여 role 설정
+        Optional<UserSubscription> subscription = userSubscriptionRepository.findByUserId(userEntity.getUserId());
+        String role = subscription
+                .orElse(UserSubscription.newSubscription(userEntity.getUserId()))
+                .getSubscriptionType()
+                .toRole();
+        
+        return Optional.of(NetplixUser.builder()
+                .userId(userEntity.getUserId())
+                .username(userEntity.getUsername())
+                .encryptedPassword(userEntity.getPassword())
+                .email(userEntity.getEmail())
+                .phone(userEntity.getPhone())
+                .role(role)
+                .build());
     }
 
     @Override

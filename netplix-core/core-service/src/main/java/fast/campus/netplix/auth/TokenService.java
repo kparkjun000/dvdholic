@@ -60,25 +60,52 @@ public class TokenService implements FetchTokenUseCase, CreateTokenUseCase, Upda
 
     @Override
     public UserResponse findUserByAccessToken(String accessToken) {
+        System.out.println("========== 토큰으로 사용자 조회 ==========");
         Claims claims = parseClaims(accessToken);
 
         Object userId = claims.get("userId");
+        System.out.println("토큰에서 추출한 userId: " + userId);
 
         if (ObjectUtils.isEmpty(userId)) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
-        return fetchUserUseCase.findByProviderId(userId.toString());
+        String userIdString = userId.toString();
+        
+        // 먼저 소셜 사용자(providerId)로 조회 시도
+        UserResponse userResponse = fetchUserUseCase.findByProviderId(userIdString);
+        System.out.println("소셜 사용자 조회 결과: " + (userResponse != null ? "찾음" : "없음"));
+        
+        // 소셜 사용자가 아니면 일반 사용자(email)로 조회
+        if (userResponse == null) {
+            userResponse = fetchUserUseCase.findByEmail(userIdString);
+            System.out.println("일반 사용자 조회 결과: " + (userResponse != null ? "찾음" : "없음"));
+        }
+        
+        if (userResponse == null) {
+            System.out.println("사용자를 찾을 수 없음!");
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+        
+        System.out.println("조회된 사용자 role: " + userResponse.role());
+        System.out.println("==========================================");
+        
+        return userResponse;
     }
 
     @Override
     public Boolean validateToken(String accessToken) {
-        Jwts.parser()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(accessToken);
+        try {
+            Jwts.parser()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(accessToken);
 
-        return true;
+            return true;
+        } catch (Exception e) {
+            // JWT 파싱 실패 시 false 반환 (로그는 남기지 않음)
+            return false;
+        }
     }
 
     @Override

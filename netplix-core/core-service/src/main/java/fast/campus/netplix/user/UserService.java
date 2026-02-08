@@ -73,12 +73,20 @@ public class UserService implements RegisterUserUseCase, FetchUserUseCase {
                 .email(netplixUser.getEmail())
                 .password(netplixUser.getEncryptedPassword())
                 .phone(netplixUser.getPhone())
+                .role(netplixUser.getRole())
                 .build();
     }
 
     @Override
     public UserResponse findByProviderId(String providerId) {
         return searchUserPort.findByProviderId(providerId)
+                .map(UserResponse::toUserResponse)
+                .orElse(null);
+    }
+    
+    @Override
+    public UserResponse findByEmail(String email) {
+        return searchUserPort.findByEmail(email)
                 .map(UserResponse::toUserResponse)
                 .orElse(null);
     }

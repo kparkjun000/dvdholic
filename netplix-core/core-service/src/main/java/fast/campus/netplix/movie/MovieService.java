@@ -27,8 +27,20 @@ public class MovieService implements FetchMovieUseCase, InsertMovieUseCase, Down
 
     @Override
     public MoviePageableResponse fetchFromDb(int page) {
-        List<NetplixMovie> netplixMovies = persistenceMoviePort.fetchBy(page, 10);
-        return new MoviePageableResponse(netplixMovies, page, false);
+        int pageSize = 20;
+        
+        // Fetch pageSize + 1 to check if there's a next page
+        List<NetplixMovie> netplixMovies = persistenceMoviePort.fetchBy(page, pageSize + 1);
+        
+        // Check if there's a next page
+        boolean hasNext = netplixMovies.size() > pageSize;
+        
+        // Return only pageSize items
+        List<NetplixMovie> resultMovies = hasNext 
+            ? netplixMovies.subList(0, pageSize) 
+            : netplixMovies;
+        
+        return new MoviePageableResponse(resultMovies, page, hasNext);
     }
 
     @Override
@@ -46,7 +58,7 @@ public class MovieService implements FetchMovieUseCase, InsertMovieUseCase, Down
                 .validate(downloadCnt);
 
         if (!validate) {
-            throw new RuntimeException("더 이상 다운로드 할 수 없습니다.");
+            throw new RuntimeException("No more downloads available today.");
         }
 
         NetplixMovie netplixMovie = persistenceMoviePort.findBy(name);

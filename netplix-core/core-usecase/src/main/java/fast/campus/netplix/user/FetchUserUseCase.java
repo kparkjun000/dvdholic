@@ -11,6 +11,8 @@ public interface FetchUserUseCase {
     DetailUserResponse findDetailUserByEmail(String email);
 
     UserResponse findByProviderId(String providerId);
+    
+    UserResponse findByEmail(String email);
 
     SocialUserResponse findKakaoUser(String accessToken);
 }

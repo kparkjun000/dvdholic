@@ -14,6 +14,8 @@ public class HttpPageItemReader extends AbstractItemCountingItemStreamItemReader
 
     private int page;
     private final List<NetplixMovie> contents = new LinkedList<>();
+    private boolean hasNext = true;
+    private static final int MAX_PAGE = 500; // TMDB API 최대 페이지
 
     private final FetchMovieUseCase fetchMovieUseCase;
 
@@ -24,7 +26,7 @@ public class HttpPageItemReader extends AbstractItemCountingItemStreamItemReader
 
     @Override
     protected NetplixMovie doRead() {
-        if (this.contents.isEmpty()) {
+        if (this.contents.isEmpty() && hasNext && page <= MAX_PAGE) {
             readRow();
         }
 
@@ -49,8 +51,26 @@ public class HttpPageItemReader extends AbstractItemCountingItemStreamItemReader
     }
 
     public void readRow() {
-        MoviePageableResponse moviePageableResponse = fetchMovieUseCase.fetchFromClient(page);
-        contents.addAll(moviePageableResponse.getMovies());
-        page++;
+        System.out.println("========== TMDB API 페이지 조회 ==========");
+        System.out.println("현재 페이지: " + page);
+        
+        try {
+            MoviePageableResponse moviePageableResponse = fetchMovieUseCase.fetchFromClient(page);
+            
+            List<NetplixMovie> movies = moviePageableResponse.getMovies();
+            contents.addAll(movies);
+            
+            // hasNext 업데이트
+            hasNext = moviePageableResponse.getHasNext() != null && moviePageableResponse.getHasNext();
+            
+            System.out.println("조회된 영화 수: " + movies.size());
+            System.out.println("다음 페이지 있음: " + hasNext);
+            System.out.println("==========================================");
+            
+            page++;
+        } catch (Exception e) {
+            System.out.println("❌ API 호출 실패: " + e.getMessage());
+            hasNext = false;
+        }
     }
 }
