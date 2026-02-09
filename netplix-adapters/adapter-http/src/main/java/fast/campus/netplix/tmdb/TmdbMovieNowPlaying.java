@@ -51,6 +51,7 @@ public class TmdbMovieNowPlaying {
                 .genre(TmdbMovieGenre.getGenreNamesByIds(genreIds))
                 .overview(overview)
                 .releasedAt(releaseDate)
+                .posterPath(posterPath)
                 .build();
     }
 }

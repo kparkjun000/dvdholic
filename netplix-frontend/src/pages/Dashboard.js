@@ -87,83 +87,448 @@ function Dashboard() {
     }
   };
 
-  return (
-    <div className="card shadow-sm p-4" style={{ width: "100%" }}>
-      <h3 className="text-center mb-4">대시보드</h3>
-      <p>여기는 대시보드입니다.</p>
+  // 깨진 한글을 감지하는 함수 (CJK 한자가 포함되어 있으면 깨진 것으로 판단)
+  const isCorruptedKorean = (text) => {
+    if (!text) return false;
+    // CJK Unified Ideographs 범위 (U+4E00 ~ U+9FFF)
+    // 정상적인 한글 설명에는 중국 한자가 없어야 함
+    const cjkPattern = /[\u4E00-\u9FFF]/;
+    return cjkPattern.test(text);
+  };
 
-      <div className="mb-3">
-        <button className="btn btn-primary" onClick={() => getMovies(0)}>
-          영화 조회
+  // 설명 텍스트를 표시하는 함수
+  const getDisplayOverview = (overview) => {
+    if (overview === "No description available.") {
+      return "설명이 제공되지 않습니다.";
+    }
+    if (isCorruptedKorean(overview)) {
+      return "설명이 제공되지 않습니다.";
+    }
+    return overview;
+  };
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        backgroundColor: "#141414",
+        minHeight: "100vh",
+        padding: "30px",
+        fontFamily: "'D2Coding', monospace",
+      }}
+    >
+      <h3
+        className="text-center mb-4"
+        style={{
+          color: "#E50914",
+          fontWeight: "bold",
+          fontSize: "2.5rem",
+          textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+        }}
+      >
+        HOLIC
+      </h3>
+
+      <div className="mb-4 text-center">
+        <button
+          onClick={() => getMovies(0)}
+          style={{
+            backgroundColor: "#E50914",
+            color: "white",
+            border: "none",
+            padding: "15px 40px",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontSize: "18px",
+            fontWeight: "bold",
+            transition: "all 0.3s ease",
+            boxShadow: "0 4px 8px rgba(229, 9, 20, 0.3)",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#B20710";
+            e.target.style.transform = "scale(1.05)";
+            e.target.style.boxShadow = "0 6px 12px rgba(229, 9, 20, 0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "#E50914";
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 4px 8px rgba(229, 9, 20, 0.3)";
+          }}
+        >
+          🎬 영화 조회
         </button>
       </div>
 
       <div className="container mt-4">
-        <h2 className="text-center mb-4">영화 데이터</h2>
+        <h2
+          className="text-center mb-4"
+          style={{ color: "#ffffff", fontWeight: "bold", fontSize: "1.8rem" }}
+        >
+          인기 영화
+        </h2>
 
         {/* 페이지네이션 - 상단 */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
+        <div
+          className="d-flex justify-content-center align-items-center mb-3"
+          style={{ gap: "15px" }}
+        >
           <button
-            className="btn btn-secondary"
             onClick={handlePrevPage}
             disabled={page === 0}
+            style={{
+              backgroundColor: page === 0 ? "#555" : "#E50914",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              cursor: page === 0 ? "not-allowed" : "pointer",
+              fontSize: "16px",
+              fontWeight: "bold",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (page !== 0) e.target.style.backgroundColor = "#B20710";
+            }}
+            onMouseLeave={(e) => {
+              if (page !== 0) e.target.style.backgroundColor = "#E50914";
+            }}
           >
-            ◀ 이전
+            ← 이전
           </button>
           <span
-            className="badge bg-primary"
-            style={{ fontSize: "1rem", padding: "0.5rem 1rem" }}
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#ffffff",
+              padding: "8px 20px",
+              backgroundColor: "#2a2a2a",
+              border: "2px solid #E50914",
+              borderRadius: "5px",
+              minWidth: "100px",
+              textAlign: "center",
+            }}
           >
-            페이지: {page + 1}
+            {page + 1}
           </span>
           <button
-            className="btn btn-secondary"
             onClick={handleNextPage}
             disabled={!hasNext}
+            style={{
+              backgroundColor: !hasNext ? "#555" : "#E50914",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              cursor: !hasNext ? "not-allowed" : "pointer",
+              fontSize: "16px",
+              fontWeight: "bold",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (hasNext) e.target.style.backgroundColor = "#B20710";
+            }}
+            onMouseLeave={(e) => {
+              if (hasNext) e.target.style.backgroundColor = "#E50914";
+            }}
           >
-            다음 ▶
+            다음 →
           </button>
         </div>
 
-        <table className="table table-bordered table-hover">
-          <thead className="thead-dark">
-            <tr>
-              <th>영화 이름</th>
-              <th>장르</th>
-              <th>설명</th>
-              <th>좋아요</th>
-              <th>싫어요</th>
-              <th>다운로드</th>
+        <table
+          style={{
+            width: "100%",
+            backgroundColor: "#141414",
+            border: "none",
+            borderCollapse: "separate",
+            borderSpacing: "0 10px",
+          }}
+        >
+          <thead
+            style={{
+              backgroundColor: "#000000",
+              color: "white",
+              border: "none",
+              outline: "none",
+            }}
+          >
+            <tr style={{ border: "none", outline: "none" }}>
+              <th
+                style={{
+                  padding: "15px",
+                  fontWeight: "600",
+                  border: "none",
+                  outline: "none",
+                  textAlign: "center",
+                }}
+              >
+                영화 이름
+              </th>
+              <th
+                style={{
+                  padding: "15px",
+                  fontWeight: "600",
+                  border: "none",
+                  outline: "none",
+                  textAlign: "center",
+                }}
+              >
+                장르
+              </th>
+              <th
+                style={{
+                  padding: "15px",
+                  fontWeight: "600",
+                  border: "none",
+                  outline: "none",
+                  textAlign: "center",
+                }}
+              >
+                설명
+              </th>
+              <th
+                style={{
+                  width: "60px",
+                  padding: "15px",
+                  border: "none",
+                  outline: "none",
+                }}
+              ></th>
+              <th
+                style={{
+                  width: "60px",
+                  padding: "15px",
+                  border: "none",
+                  outline: "none",
+                }}
+              ></th>
+              <th
+                style={{
+                  width: "60px",
+                  padding: "15px",
+                  border: "none",
+                  outline: "none",
+                }}
+              ></th>
+              <th
+                style={{
+                  width: "60px",
+                  padding: "15px",
+                  border: "none",
+                  outline: "none",
+                }}
+              ></th>
             </tr>
           </thead>
-          <tbody>
-            {movies.map((item) => (
-              <tr key={item.movieName}>
-                <td>{item.movieName}</td>
-                <td>{item.genre}</td>
-                <td>{item.overview}</td>
-                <td>
+          <tbody style={{ border: "none", outline: "none" }}>
+            {movies.map((item, index) => (
+              <tr
+                key={item.movieName}
+                style={{
+                  backgroundColor: "#1f1f1f",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  border: "none",
+                  outline: "none",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#2a2a2a";
+                  e.currentTarget.style.transform = "scale(1.01)";
+                  e.currentTarget.style.border = "none";
+                  e.currentTarget.style.outline = "none";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#1f1f1f";
+                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.border = "none";
+                  e.currentTarget.style.outline = "none";
+                }}
+              >
+                <td
+                  style={{
+                    padding: "15px",
+                    fontWeight: "500",
+                    color: "#ffffff",
+                    border: "none",
+                    outline: "none",
+                    textAlign: "center",
+                    borderTopLeftRadius: "8px",
+                    borderBottomLeftRadius: "8px",
+                    verticalAlign: "middle",
+                    boxShadow: "none",
+                  }}
+                >
+                  {item.movieName}
+                </td>
+                <td
+                  style={{
+                    padding: "15px",
+                    color: "#b3b3b3",
+                    border: "none",
+                    outline: "none",
+                    textAlign: "center",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  {item.genre}
+                </td>
+                <td
+                  style={{
+                    padding: "15px",
+                    color: "#999999",
+                    border: "none",
+                    outline: "none",
+                    textAlign: "center",
+                    verticalAlign: "middle",
+                  }}
+                >
+                  {getDisplayOverview(item.overview)}
+                </td>
+                <td
+                  style={{
+                    textAlign: "center",
+                    padding: "15px",
+                    border: "none",
+                    outline: "none",
+                    verticalAlign: "middle",
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  {item.posterPath ? (
+                    <a
+                      href={`https://image.tmdb.org/t/p/w500${item.posterPath}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ border: "none", background: "none" }}
+                    >
+                      <img
+                        src="https://img.icons8.com/fluency/48/gallery.png"
+                        alt="이미지 보기"
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          cursor: "pointer",
+                          transition: "transform 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.target.style.transform = "scale(1.2)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.target.style.transform = "scale(1)")
+                        }
+                      />
+                    </a>
+                  ) : (
+                    <img
+                      src="https://img.icons8.com/fluency/48/gallery.png"
+                      alt="이미지 없음"
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        opacity: "0.3",
+                        cursor: "not-allowed",
+                      }}
+                    />
+                  )}
+                </td>
+                <td
+                  style={{
+                    textAlign: "center",
+                    padding: "15px",
+                    border: "none",
+                    outline: "none",
+                    verticalAlign: "middle",
+                  }}
+                >
                   <button
-                    className="btn btn-success btn-sm"
+                    className="btn btn-link p-0"
                     onClick={() => like(item.movieName)}
+                    style={{ border: "none", background: "none" }}
                   >
-                    👍 좋아요
+                    <img
+                      src="https://img.icons8.com/fluency/48/like.png"
+                      alt="좋아요"
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        cursor: "pointer",
+                        transition: "transform 0.2s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.target.style.transform = "scale(1.2)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.target.style.transform = "scale(1)")
+                      }
+                    />
                   </button>
                 </td>
-                <td>
+                <td
+                  style={{
+                    textAlign: "center",
+                    padding: "15px",
+                    border: "none",
+                    outline: "none",
+                    verticalAlign: "middle",
+                  }}
+                >
                   <button
-                    className="btn btn-warning btn-sm"
+                    className="btn btn-link p-0"
                     onClick={() => unlike(item.movieName)}
+                    style={{ border: "none", background: "none" }}
                   >
-                    👎 싫어요
+                    <img
+                      src="https://img.icons8.com/fluency/48/dislike.png"
+                      alt="싫어요"
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        cursor: "pointer",
+                        transition: "transform 0.2s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.target.style.transform = "scale(1.2)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.target.style.transform = "scale(1)")
+                      }
+                    />
                   </button>
                 </td>
-                <td>
+                <td
+                  style={{
+                    textAlign: "center",
+                    padding: "15px",
+                    border: "none",
+                    outline: "none",
+                    borderTopRightRadius: "8px",
+                    borderBottomRightRadius: "8px",
+                    verticalAlign: "middle",
+                  }}
+                >
                   <button
-                    className="btn btn-info btn-sm"
+                    className="btn btn-link p-0"
                     onClick={() => download(item.movieName)}
+                    style={{ border: "none", background: "none" }}
                   >
-                    📥 다운로드
+                    <img
+                      src="https://img.icons8.com/fluency/48/download-from-cloud.png"
+                      alt="다운로드"
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        cursor: "pointer",
+                        transition: "transform 0.2s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.target.style.transform = "scale(1.2)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.target.style.transform = "scale(1)")
+                      }
+                    />
                   </button>
                 </td>
               </tr>
@@ -172,27 +537,70 @@ function Dashboard() {
         </table>
 
         {/* 페이지네이션 - 하단 */}
-        <div className="d-flex justify-content-between align-items-center mt-3">
+        <div
+          className="d-flex justify-content-center align-items-center mt-3"
+          style={{ gap: "15px" }}
+        >
           <button
-            className="btn btn-secondary"
             onClick={handlePrevPage}
             disabled={page === 0}
+            style={{
+              backgroundColor: page === 0 ? "#555" : "#E50914",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              cursor: page === 0 ? "not-allowed" : "pointer",
+              fontSize: "16px",
+              fontWeight: "bold",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (page !== 0) e.target.style.backgroundColor = "#B20710";
+            }}
+            onMouseLeave={(e) => {
+              if (page !== 0) e.target.style.backgroundColor = "#E50914";
+            }}
           >
-            ◀ 이전
+            ← 이전
           </button>
           <span
-            className="badge bg-primary"
-            style={{ fontSize: "1rem", padding: "0.5rem 1rem" }}
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#ffffff",
+              padding: "8px 20px",
+              backgroundColor: "#2a2a2a",
+              border: "2px solid #E50914",
+              borderRadius: "5px",
+              minWidth: "100px",
+              textAlign: "center",
+            }}
           >
-            페이지: {page + 1}{" "}
-            {hasNext ? "(다음 페이지 있음)" : "(마지막 페이지)"}
+            {page + 1}
           </span>
           <button
-            className="btn btn-secondary"
             onClick={handleNextPage}
             disabled={!hasNext}
+            style={{
+              backgroundColor: !hasNext ? "#555" : "#E50914",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              cursor: !hasNext ? "not-allowed" : "pointer",
+              fontSize: "16px",
+              fontWeight: "bold",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (hasNext) e.target.style.backgroundColor = "#B20710";
+            }}
+            onMouseLeave={(e) => {
+              if (hasNext) e.target.style.backgroundColor = "#E50914";
+            }}
           >
-            다음 ▶
+            다음 →
           </button>
         </div>
       </div>

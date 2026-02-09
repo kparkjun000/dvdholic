@@ -61,8 +61,26 @@ public class MigrateMoviesFromTmdbBatch {
     private boolean isValidOverview(NetplixMovie movie) {
         String overview = movie.getOverview();
         
-        // Accept all movies including those without overview
-        // Korean text encoding will be handled by database UTF-8 settings
+        // Log posterPath for debugging
+        log.info("Movie: {}, PosterPath: {}", movie.getMovieName(), movie.getPosterPath());
+        
+        // Allow empty or null overview
+        if (overview == null || overview.trim().isEmpty()) {
+            return true;
+        }
+        
+        // Filter out movies with corrupted Korean text
+        // Corrupted Korean contains CJK Chinese characters (蹂, 議, etc.)
+        // instead of proper Korean characters
+        for (char c : overview.toCharArray()) {
+            // Check if character is CJK Chinese ideograph (not Korean)
+            if (c >= '\u4E00' && c <= '\u9FFF') {
+                log.info("Filtering movie with corrupted Korean: {} - {}", 
+                    movie.getMovieName(), overview.substring(0, Math.min(50, overview.length())));
+                return false;
+            }
+        }
+        
         return true;
     }
 }

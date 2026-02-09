@@ -39,13 +39,17 @@ public class MovieEntity extends MutableBaseEntity {
     @Column(name = "RELEASED_AT")
     private String releasedAt;
 
+    @Column(name = "POSTER_PATH")
+    private String posterPath;
+
     public NetplixMovie toDomain() {
         return NetplixMovie.builder()
                 .movieName(this.movieName)
                 .isAdult(this.isAdult)
                 .genre(this.genre)
                 .overview(this.overview)
-                .releasedAt(this.overview)
+                .releasedAt(this.releasedAt)
+                .posterPath(this.posterPath)
                 .build();
     }
 
@@ -56,7 +60,8 @@ public class MovieEntity extends MutableBaseEntity {
                 netplixMovie.getIsAdult(),
                 netplixMovie.getGenre(),
                 getSubstrOverview(netplixMovie.getOverview()),
-                netplixMovie.getReleasedAt()
+                netplixMovie.getReleasedAt(),
+                netplixMovie.getPosterPath()
         );
     }
 
