@@ -31,6 +31,20 @@ function Dashboard() {
         console.log("✅ 영화 데이터 설정 완료:", movieData.movies.length, "개");
         console.log("✅ 현재 페이지:", movieData.page);
         console.log("✅ 다음 페이지 여부:", movieData.hasNext);
+
+        // 각 영화의 posterPath 확인
+        console.log("\n📽️ 각 영화의 posterPath 정보:");
+        movieData.movies.forEach((movie, index) => {
+          console.log(`${index + 1}. ${movie.movieName}`);
+          console.log(`   - posterPath: ${movie.posterPath}`);
+          console.log(
+            `   - 이미지 URL: ${
+              movie.posterPath
+                ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
+                : "null"
+            }`
+          );
+        });
       } else {
         console.log("영화 데이터가 없습니다.");
         setMovies([]);

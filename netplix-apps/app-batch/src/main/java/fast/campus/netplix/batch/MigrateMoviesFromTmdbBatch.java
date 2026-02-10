@@ -34,7 +34,6 @@ public class MigrateMoviesFromTmdbBatch {
     @Bean(name = BATCH_NAME)
     public Job job(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
         return new JobBuilder(BATCH_NAME, jobRepository)
-                .preventRestart()
                 .start(step(jobRepository, platformTransactionManager))
                 .incrementer(new RunIdIncrementer())
                 .build();
