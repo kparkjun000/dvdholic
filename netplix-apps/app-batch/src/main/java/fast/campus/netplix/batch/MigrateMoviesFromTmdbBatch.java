@@ -42,17 +42,27 @@ public class MigrateMoviesFromTmdbBatch {
     @Bean(name = "MigrateMoviesFromTmdbBatchTaskletStep")
     public Step step(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
         return new StepBuilder("MigrateMoviesFromTmdbBatchTaskletStep", jobRepository)
-                .chunk(10, platformTransactionManager)
+                .chunk(5, platformTransactionManager)
                 .reader(new HttpPageItemReader(1, fetchMovieUseCase))
                 .writer(chunk -> {
                     List<NetplixMovie> items = (List<NetplixMovie>) chunk.getItems();
+                    log.info("========== Processing {} movies ==========", items.size());
+                    
                     // Filter out movies with corrupted Korean text
                     List<NetplixMovie> validItems = items.stream()
                             .filter(this::isValidOverview)
                             .collect(Collectors.toList());
                     
                     log.info("Filtered {} movies out of {}", items.size() - validItems.size(), items.size());
-                    insertMovieUseCase.insert(validItems);
+                    
+                    // Insert each movie with logging
+                    for (NetplixMovie movie : validItems) {
+                        log.info("Inserting movie: {}", movie.getMovieName());
+                        insertMovieUseCase.insert(List.of(movie));
+                        log.info("✓ Completed movie: {}", movie.getMovieName());
+                    }
+                    
+                    log.info("========== Chunk completed ==========");
                 })
                 .build();
     }
@@ -60,8 +70,8 @@ public class MigrateMoviesFromTmdbBatch {
     private boolean isValidOverview(NetplixMovie movie) {
         String overview = movie.getOverview();
         
-        // Log posterPath for debugging
-        log.info("Movie: {}, PosterPath: {}", movie.getMovieName(), movie.getPosterPath());
+        // Log posterPath and backdropPath for debugging
+        log.info("Movie: {}, PosterPath: {}, BackdropPath: {}", movie.getMovieName(), movie.getPosterPath(), movie.getBackdropPath());
         
         // Allow empty or null overview
         if (overview == null || overview.trim().isEmpty()) {

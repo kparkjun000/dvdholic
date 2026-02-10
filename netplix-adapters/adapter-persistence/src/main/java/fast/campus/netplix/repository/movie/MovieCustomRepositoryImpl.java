@@ -31,6 +31,7 @@ public class MovieCustomRepositoryImpl implements MovieCustomRepository {
     @Override
     public Page<MovieEntity> search(Pageable pageable) {
         List<MovieEntity> fetch = jpaQueryFactory.selectFrom(movieEntity)
+                .orderBy(movieEntity.movieId.asc())  // 정렬 추가: movieId로 오름차순
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

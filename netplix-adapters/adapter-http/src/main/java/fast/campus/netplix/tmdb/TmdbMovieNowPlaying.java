@@ -39,10 +39,10 @@ public class TmdbMovieNowPlaying {
     private String video;
 
     @JsonProperty("vote_average")
-    private String voteAverage;
+    private Double voteAverage;
 
     @JsonProperty("vote_count")
-    private String voteCount;
+    private Integer voteCount;
 
     public NetplixMovie toDomain() {
         return NetplixMovie.builder()
@@ -52,6 +52,19 @@ public class TmdbMovieNowPlaying {
                 .overview(overview)
                 .releasedAt(releaseDate)
                 .posterPath(posterPath)
+                .backdropPath(backdropPath)
+                .voteAverage(voteAverage)
+                .cast(null)
+                .director(null)
+                .runtime(null)
+                .releaseDate(releaseDate)
+                .certification(null)
+                .budget(null)
+                .revenue(null)
                 .build();
+    }
+    
+    public Integer getTmdbId() {
+        return id;
     }
 }

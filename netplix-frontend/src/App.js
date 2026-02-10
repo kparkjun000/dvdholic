@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Link, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Link,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -9,8 +15,9 @@ import Main from "./pages/Main";
 import KakaoAuthRedirect from "./pages/KakaoAuthRedirect";
 import "./axiosConfig"; // Axios 인터셉터 설정
 
-function App() {
+function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -33,68 +40,224 @@ function App() {
   };
 
   return (
-    <Router>
-      <div>
-        {/* 상단 네비게이션 바 */}
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-          <div className="container">
-            <Link className="navbar-brand" to="/">
-              Netplix
-            </Link>
-            <div className="collapse navbar-collapse">
-              <ul className="navbar-nav ms-auto">
-                {!isLoggedIn ? (
-                  <>
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/login">
+    <div
+      style={{
+        backgroundImage: "url(/d.png)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        minHeight: "100vh",
+        width: "100%",
+        margin: 0,
+        padding: 0,
+      }}
+    >
+      {/* 상단 네비게이션 바 */}
+      <nav
+        style={{
+          backgroundColor: "transparent",
+          padding: "15px 0",
+          border: "none",
+          boxShadow: "none",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "0 40px",
+            margin: 0,
+          }}
+        >
+          {/* 왼쪽 - 로고 */}
+          <Link
+            className="navbar-brand"
+            to="/"
+            onClick={(e) => {
+              // 로그인 또는 회원가입 페이지에서는 클릭 방지
+              if (
+                location.pathname === "/login" ||
+                location.pathname === "/signup"
+              ) {
+                e.preventDefault();
+              }
+            }}
+            style={{
+              color: "#ffffff",
+              fontSize: "28px",
+              fontWeight: "bold",
+              textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              lineHeight: "40px",
+              cursor:
+                location.pathname === "/login" ||
+                location.pathname === "/signup"
+                  ? "default"
+                  : "pointer",
+              flex: "0 0 auto",
+            }}
+          >
+            <img
+              src="/icons8-dvd-logo-100.png"
+              alt="DVD Logo"
+              style={{
+                width: "40px",
+                height: "40px",
+                verticalAlign: "middle",
+              }}
+            />
+            <span style={{ lineHeight: "40px" }}>Holic</span>
+            <img
+              src="/snake-icon2.gif"
+              alt="Snake Icon"
+              style={{
+                width: "35px",
+                height: "35px",
+                objectFit: "contain",
+                backgroundColor: "transparent",
+                mixBlendMode: "screen",
+                verticalAlign: "middle",
+              }}
+            />
+          </Link>
+
+          {/* 가운데 - 업데이트 안내 */}
+          {location.pathname === "/dashboard" && (
+            <div
+              style={{
+                flex: "1 1 auto",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{
+                  color: "#ff0000",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  textShadow:
+                    "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 3px 3px 6px rgba(0,0,0,0.9)",
+                  WebkitTextStroke: "1px #000",
+                  fontFamily:
+                    "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                HOT🔥 최신 DVD 매일 자동 업데이트!! (새벽 2시)
+              </span>
+            </div>
+          )}
+
+          {/* 오른쪽 - 로그인/로그아웃 */}
+          <div style={{ flex: "0 0 auto" }}>
+            <ul
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                listStyle: "none",
+                margin: 0,
+                padding: 0,
+                gap: "20px",
+                alignItems: "center",
+              }}
+            >
+              {!isLoggedIn ||
+              location.pathname === "/login" ||
+              location.pathname === "/signup" ? (
+                <>
+                  {location.pathname !== "/login" && (
+                    <li>
+                      <Link
+                        to="/login"
+                        style={{
+                          color: "#ffffff",
+                          fontWeight: "500",
+                          fontSize: "16px",
+                          textShadow: "1px 1px 3px rgba(0,0,0,0.8)",
+                          textDecoration: "none",
+                        }}
+                      >
                         로그인
                       </Link>
                     </li>
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/signup">
+                  )}
+                  {location.pathname !== "/signup" && (
+                    <li>
+                      <Link
+                        to="/signup"
+                        style={{
+                          color: "#ffffff",
+                          fontWeight: "500",
+                          fontSize: "16px",
+                          textShadow: "1px 1px 3px rgba(0,0,0,0.8)",
+                          textDecoration: "none",
+                        }}
+                      >
                         회원가입
                       </Link>
                     </li>
-                  </>
-                ) : (
-                  <>
-                    <li className="nav-item">
-                      <button className="btn btn-danger" onClick={handleLogout}>
-                        로그아웃
-                      </button>
-                    </li>
-                  </>
-                )}
-              </ul>
-            </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <li>
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleLogout}
+                      style={{
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                        fontWeight: "600",
+                      }}
+                    >
+                      로그아웃
+                    </button>
+                  </li>
+                </>
+              )}
+            </ul>
           </div>
-        </nav>
-
-        {/* 페이지 라우팅 */}
-        <div className="container mt-5">
-          <Routes>
-            <Route path="/" element={<Main />} />
-            <Route
-              path="/login"
-              element={<Login setIsLoggedIn={setIsLoggedIn} />}
-            />
-            <Route path="/signup" element={<Signup />} />
-            <Route
-              path="/login/oauth2/code/kakao"
-              element={<KakaoAuthRedirect />}
-            />
-
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
         </div>
+      </nav>
+
+      {/* 페이지 라우팅 */}
+      <div style={{ width: "100%", margin: 0, padding: 0 }}>
+        <Routes>
+          <Route path="/" element={<Main />} />
+          <Route
+            path="/login"
+            element={<Login setIsLoggedIn={setIsLoggedIn} />}
+          />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/login/oauth2/code/kakao"
+            element={<KakaoAuthRedirect />}
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
       </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

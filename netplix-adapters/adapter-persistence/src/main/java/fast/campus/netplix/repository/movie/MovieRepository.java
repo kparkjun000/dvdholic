@@ -43,8 +43,14 @@ public class MovieRepository implements PersistenceMoviePort {
             movieJpaRepository.save(entity);
             return entity.getMovieId();
         } else {
-            // Update existing movie with new data (especially posterPath)
             MovieEntity existingEntity = byMovieName.get();
+            
+            // Skip if detailed info already exists
+            if (existingEntity.getCast() != null && existingEntity.getDirector() != null) {
+                log.info("Skipping movie (already has details): {}", netplixMovie.getMovieName());
+                return existingEntity.getMovieId();
+            }
+            
             log.info("Updating existing movie: {}", netplixMovie.getMovieName());
             
             // Delete old and insert new to ensure all fields are updated

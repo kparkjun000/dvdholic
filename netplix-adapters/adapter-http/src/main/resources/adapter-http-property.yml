@@ -9,3 +9,6 @@ tmdb:
       popular: https://api.themoviedb.org/3/movie/popular
       top-rated: https://api.themoviedb.org/3/movie/top_rated
       upcoming: https://api.themoviedb.org/3/movie/upcoming
+    movie-details: https://api.themoviedb.org/3/movie/{movie_id}?api_key=486d0db4fa8e48a014a6d0ca36c98adb&language=ko-KR
+    movie-credits: https://api.themoviedb.org/3/movie/{movie_id}/credits?api_key=486d0db4fa8e48a014a6d0ca36c98adb
+    movie-release-dates: https://api.themoviedb.org/3/movie/{movie_id}/release_dates?api_key=486d0db4fa8e48a014a6d0ca36c98adb

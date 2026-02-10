@@ -4,7 +4,7 @@ import axios from "../axiosConfig";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Login({ setIsLoggedIn }) {
-  const [username, setUsername] = useState("danny.kim@kakaobank.com");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate(); // 페이지 이동을 위한 useNavigate 훅 사용
@@ -42,10 +42,23 @@ function Login({ setIsLoggedIn }) {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "calc(100vh - 80px)",
+        padding: "20px",
+      }}
+    >
       <div
         className="card shadow-sm p-4"
-        style={{ width: "100%", maxWidth: "400px" }}
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(10px)",
+        }}
       >
         <h3 className="text-center mb-4">로그인</h3>
         <form onSubmit={handleSubmit}>
@@ -59,6 +72,7 @@ function Login({ setIsLoggedIn }) {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              placeholder="danny.kim@kakaobank.com"
             />
           </div>
           <div className="mb-3">
@@ -77,6 +91,12 @@ function Login({ setIsLoggedIn }) {
             로그인
           </button>
         </form>
+        <button
+          onClick={() => navigate("/signup")}
+          className="btn btn-success w-100 mt-3"
+        >
+          회원가입
+        </button>
         <button
           onClick={handleKakaoLogin}
           className="btn btn-warning w-100 mt-3"

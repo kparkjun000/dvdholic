@@ -42,6 +42,33 @@ public class MovieEntity extends MutableBaseEntity {
     @Column(name = "POSTER_PATH")
     private String posterPath;
 
+    @Column(name = "BACKDROP_PATH")
+    private String backdropPath;
+
+    @Column(name = "VOTE_AVERAGE")
+    private Double voteAverage;
+
+    @Column(name = "CAST", length = 500)
+    private String cast;
+
+    @Column(name = "DIRECTOR")
+    private String director;
+
+    @Column(name = "RUNTIME")
+    private Integer runtime;
+
+    @Column(name = "RELEASE_DATE")
+    private String releaseDate;
+
+    @Column(name = "CERTIFICATION")
+    private String certification;
+
+    @Column(name = "BUDGET")
+    private Long budget;
+
+    @Column(name = "REVENUE")
+    private Long revenue;
+
     public NetplixMovie toDomain() {
         return NetplixMovie.builder()
                 .movieName(this.movieName)
@@ -50,6 +77,15 @@ public class MovieEntity extends MutableBaseEntity {
                 .overview(this.overview)
                 .releasedAt(this.releasedAt)
                 .posterPath(this.posterPath)
+                .backdropPath(this.backdropPath)
+                .voteAverage(this.voteAverage)
+                .cast(this.cast)
+                .director(this.director)
+                .runtime(this.runtime)
+                .releaseDate(this.releaseDate)
+                .certification(this.certification)
+                .budget(this.budget)
+                .revenue(this.revenue)
                 .build();
     }
 
@@ -61,7 +97,16 @@ public class MovieEntity extends MutableBaseEntity {
                 netplixMovie.getGenre(),
                 getSubstrOverview(netplixMovie.getOverview()),
                 netplixMovie.getReleasedAt(),
-                netplixMovie.getPosterPath()
+                netplixMovie.getPosterPath(),
+                netplixMovie.getBackdropPath(),
+                netplixMovie.getVoteAverage(),
+                netplixMovie.getCast(),
+                netplixMovie.getDirector(),
+                netplixMovie.getRuntime(),
+                netplixMovie.getReleaseDate(),
+                netplixMovie.getCertification(),
+                netplixMovie.getBudget(),
+                netplixMovie.getRevenue()
         );
     }
 
