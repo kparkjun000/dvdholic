@@ -67,8 +67,22 @@ Heroku 대시보드 → dvdholic → Settings → Config Vars 에서 아래 추�
    - `DB_PASSWORD` = 비밀번호 (JawsDB 비밀번호로 변경)
 3. **(필요 시)** JawsDB에서 연결이 안 되면 SSL 사용:  
    `heroku config:set DB_USE_SSL=true -a dvdholic`
-4. **코드 푸시** 후 재배포: `adapter-persistence-property.yml`에 `DB_HOST`, `DB_PORT`, `DB_NAME` 반영된 버전이 Heroku에 있어야 함.  
-   `git push heroku main` 후 `heroku restart -a dvdholic`
+4. **코드 푸시** 후 재배포: `git push heroku main` 후 `heroku restart -a dvdholic`
+
+## 5-1. Flyway "failed migration" 오류가 날 때
+
+로그에 `Detected failed migration to version 1 (init)`, `run repair` 가 나오면, 한 번만 repair 후 재시작하면 됩니다.
+
+```bash
+heroku config:set FLYWAY_REPAIR=true -a dvdholic
+heroku restart -a dvdholic
+```
+
+앱이 정상 기동되면 (선택) repair 플래그 해제:
+
+```bash
+heroku config:unset FLYWAY_REPAIR -a dvdholic
+```
 
 ## 6. Redis (필요 시)
 
