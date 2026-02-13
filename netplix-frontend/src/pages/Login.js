@@ -42,7 +42,13 @@ function Login({ setIsLoggedIn }) {
   };
 
   const handleKakaoLogin = () => {
-    const apiBase = process.env.REACT_APP_API_URL || "http://localhost:8080";
+    // 프로덕션(Heroku 등)에서는 현재 오리진 사용. 로컬만 localhost:8080 사용
+    const apiBase =
+      process.env.REACT_APP_API_URL !== undefined && process.env.REACT_APP_API_URL !== ""
+        ? process.env.REACT_APP_API_URL
+        : process.env.NODE_ENV === "production"
+          ? window.location.origin
+          : "http://localhost:8080";
     window.location.href = `${apiBase}/oauth2/authorization/kakao`; // 카카오 로그인 페이지로 리디렉션
   };
 

@@ -2,6 +2,13 @@ import React, { useState } from "react";
 import axios from "../axiosConfig";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+// 목록 API용 baseURL (토큰 없이 호출)
+function getListBaseUrl() {
+  const apiUrl = process.env.REACT_APP_API_URL;
+  if (apiUrl !== undefined && apiUrl !== "") return apiUrl;
+  return process.env.NODE_ENV === "production" ? "" : "http://localhost:8080";
+}
+
 function Dashboard() {
   const [page, setPage] = useState(0);
   const [movies, setMovies] = useState([]);
@@ -14,13 +21,22 @@ function Dashboard() {
   const [contentType, setContentType] = useState("dvd"); // "dvd" 또는 "movie"
   const [listError, setListError] = useState(null); // 목록 로드 실패 시 메시지
 
-  // 목록 API: axios 인터셉터가 이 URL에서는 Authorization 제거 → 일반/카카오 동일하게 목록 로드
+  // 목록 API: fetch로 토큰 없이 호출 (일반/카카오 동일하게 동작)
   const getMovies = async (pageNum) => {
     setListError(null);
+    const base = getListBaseUrl();
+    const url = base ? `${base.replace(/\/$/, "")}/api/v1/movie/search?page=${pageNum}` : `/api/v1/movie/search?page=${pageNum}`;
     try {
-      const response = await axios.post(`/api/v1/movie/search?page=${pageNum}`);
-      const data = response.data?.data;
-      if (response.data?.success && data && Array.isArray(data.movies)) {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" } });
+      const json = await res.json();
+      if (!res.ok) {
+        setMovies([]);
+        setHasNext(false);
+        setListError(`DVD 목록을 불러올 수 없습니다. (${res.status})`);
+        return;
+      }
+      const data = json?.data;
+      if (json?.success && data && Array.isArray(data.movies)) {
         setMovies(data.movies);
         setHasNext(Boolean(data.hasNext));
         setPage(pageNum);
@@ -28,7 +44,7 @@ function Dashboard() {
         setMovies([]);
         setHasNext(false);
       }
-    } catch (error) {
+    } catch (err) {
       setMovies([]);
       setHasNext(false);
       setListError("DVD 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.");
@@ -37,10 +53,19 @@ function Dashboard() {
 
   const getPlayingMovies = async (pageNum) => {
     setListError(null);
+    const base = getListBaseUrl();
+    const url = base ? `${base.replace(/\/$/, "")}/api/v1/movie/playing/search?page=${pageNum}` : `/api/v1/movie/playing/search?page=${pageNum}`;
     try {
-      const response = await axios.post(`/api/v1/movie/playing/search?page=${pageNum}`);
-      const data = response.data?.data;
-      if (response.data?.success && data && Array.isArray(data.movies)) {
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" } });
+      const json = await res.json();
+      if (!res.ok) {
+        setMovies([]);
+        setHasNext(false);
+        setListError(`영화 목록을 불러올 수 없습니다. (${res.status})`);
+        return;
+      }
+      const data = json?.data;
+      if (json?.success && data && Array.isArray(data.movies)) {
         setMovies(data.movies);
         setHasNext(Boolean(data.hasNext));
         setPage(pageNum);
@@ -48,7 +73,7 @@ function Dashboard() {
         setMovies([]);
         setHasNext(false);
       }
-    } catch (error) {
+    } catch (err) {
       setMovies([]);
       setHasNext(false);
       setListError("영화 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.");
