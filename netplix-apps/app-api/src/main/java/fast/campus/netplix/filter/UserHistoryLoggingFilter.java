@@ -31,14 +31,27 @@ public class UserHistoryLoggingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        CompletableFuture.runAsync(() -> log(authentication, request));
-
+        if (shouldLog(authentication)) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    log(authentication, request);
+                } catch (Exception e) {
+                    // 감사 로그 실패가 요청 실패로 이어지지 않도록 무시
+                }
+            });
+        }
         filterChain.doFilter(request, response);
     }
 
+    private boolean shouldLog(Authentication authentication) {
+        return authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() != null
+                && !"anonymousUser".equals(String.valueOf(authentication.getPrincipal()));
+    }
+
     public void log(Authentication authentication, HttpServletRequest httpServletRequest) {
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (!shouldLog(authentication)) {
             return;
         }
         logUserAuditHistoryUseCase.log(
