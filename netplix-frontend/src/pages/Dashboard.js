@@ -38,11 +38,7 @@ function Dashboard() {
   const [listLoading, setListLoading] = useState(false);
   const lastListRequestRef = useRef({ type: "dvd", page: 0 }); // 응답 경쟁 방지: 마지막 요청 타입/페이지만 반영
 
-  // 대시보드 진입 시 기본 DVD 목록 자동 조회
-  useEffect(() => {
-    loadDvdList(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // 대시보드 진입 시에는 목록 자동 조회 안 함. Popular MOVIE Select / Popular DVD Select 버튼을 눌렀을 때만 목록 조회
 
   // DVD 목록 (Popular DVD Select)
   const loadDvdList = async (pageNum) => {
