@@ -9,12 +9,17 @@ axios.defaults.baseURL =
       ? ""
       : "http://localhost:8080";
 
-// Request Interceptor: 모든 요청에 자동으로 토큰 추가
+// Request Interceptor: 모든 요청에 자동으로 토큰 추가 (단, 공개 목록 API는 제외)
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const url = config.url || "";
+    const isPublicMovieList =
+      url.includes("/api/v1/movie/search") || url.includes("/api/v1/movie/playing/search");
+    if (!isPublicMovieList) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
