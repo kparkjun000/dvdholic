@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `netplix`.`users`;
-CREATE TABLE `netplix`.`users`
+-- DROP 제거: JawsDB 등 호스팅 DB는 DROP 권한이 없을 수 있음. CREATE TABLE IF NOT EXISTS 로만 초기화.
+CREATE TABLE IF NOT EXISTS `users`
 (
     USER_ID     VARCHAR(255) NOT NULL COMMENT '사용자 ID (UUID)',
     USER_NAME   VARCHAR(50)  NOT NULL COMMENT '사용자 이름',
@@ -15,8 +15,7 @@ CREATE TABLE `netplix`.`users`
     PRIMARY KEY (USER_ID)
 );
 
-DROP TABLE IF EXISTS `netplix`.`social_users`;
-CREATE TABLE `netplix`.`social_users`
+CREATE TABLE IF NOT EXISTS `social_users`
 (
     SOCIAL_USER_ID VARCHAR(255) NOT NULL COMMENT '소셜 사용자 ID (UUID)',
     USER_NAME      VARCHAR(50)  NOT NULL COMMENT '소셜 사용자 이름',
@@ -31,8 +30,7 @@ CREATE TABLE `netplix`.`social_users`
     PRIMARY KEY (SOCIAL_USER_ID)
 );
 
-DROP TABLE IF EXISTS `netplix`.`user_histories`;
-CREATE TABLE `netplix`.`user_histories`
+CREATE TABLE IF NOT EXISTS `user_histories`
 (
     USER_HISTORY_ID BIGINT       NOT NULL AUTO_INCREMENT COMMENT '사용자 이력 ID',
     USER_ID         VARCHAR(255) NOT NULL COMMENT '사용자 ID',
@@ -51,8 +49,7 @@ CREATE TABLE `netplix`.`user_histories`
     PRIMARY KEY (USER_HISTORY_ID)
 );
 
-DROP TABLE IF EXISTS `netplix`.`user_subscriptions`;
-CREATE TABLE `netplix`.`user_subscriptions`
+CREATE TABLE IF NOT EXISTS `user_subscriptions`
 (
     USER_SUBSCRIPTION_ID VARCHAR(255) NOT NULL COMMENT '사용자 구독 ID',
     USER_ID              VARCHAR(255) NOT NULL COMMENT '사용자 ID',
@@ -69,8 +66,7 @@ CREATE TABLE `netplix`.`user_subscriptions`
     PRIMARY KEY (USER_SUBSCRIPTION_ID)
 );
 
-DROP TABLE IF EXISTS `netplix`.`tokens`;
-CREATE TABLE `netplix`.`tokens`
+CREATE TABLE IF NOT EXISTS `tokens`
 (
     TOKEN_ID                 VARCHAR(255) NOT NULL COMMENT '토큰 PK',
     USER_ID                  VARCHAR(255) NOT NULL COMMENT '사용자 ID',
@@ -87,8 +83,7 @@ CREATE TABLE `netplix`.`tokens`
     PRIMARY KEY (TOKEN_ID)
 );
 
-DROP TABLE IF EXISTS `netplix`.`movies`;
-CREATE TABLE `netplix`.`movies`
+CREATE TABLE IF NOT EXISTS `movies`
 (
     MOVIE_ID    VARCHAR(255) NOT NULL COMMENT '영화 ID',
     MOVIE_NAME  VARCHAR(255) NOT NULL COMMENT '영화 명',
@@ -105,8 +100,7 @@ CREATE TABLE `netplix`.`movies`
     PRIMARY KEY (MOVIE_ID)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `netplix`.`user_movie_likes`;
-CREATE TABLE `netplix`.`user_movie_likes`
+CREATE TABLE IF NOT EXISTS `user_movie_likes`
 (
     USER_MOVIE_LIKE_ID VARCHAR(255) NOT NULL COMMENT 'PK',
     USER_ID            VARCHAR(255) NOT NULL COMMENT '사용자 ID',
