@@ -12,9 +12,11 @@ axios.defaults.baseURL =
 // Request Interceptor: 모든 요청에 자동으로 토큰 추가 (단, 공개 목록 API는 제외)
 axios.interceptors.request.use(
   (config) => {
-    const url = config.url || "";
+    const path = config.url || "";
+    const base = config.baseURL || "";
+    const full = path.startsWith("http") ? path : (base + path);
     const isPublicMovieList =
-      url.includes("/api/v1/movie/search") || url.includes("/api/v1/movie/playing/search");
+      full.includes("/api/v1/movie/search") || full.includes("/api/v1/movie/playing/search");
     if (isPublicMovieList) {
       delete config.headers.Authorization;
     } else {

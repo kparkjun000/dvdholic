@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios, { publicAxios } from "../axiosConfig";
+import axios from "../axiosConfig";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Dashboard() {
@@ -14,11 +14,11 @@ function Dashboard() {
   const [contentType, setContentType] = useState("dvd"); // "dvd" 또는 "movie"
   const [listError, setListError] = useState(null); // 목록 로드 실패 시 메시지
 
-  // 목록 API는 로그인 여부와 관계없이 항상 토큰 없이 호출 (일반/카카오 동일 동작)
+  // 목록 API: axios 인터셉터가 이 URL에서는 Authorization 제거 → 일반/카카오 동일하게 목록 로드
   const getMovies = async (pageNum) => {
     setListError(null);
     try {
-      const response = await publicAxios.post(`/api/v1/movie/search?page=${pageNum}`);
+      const response = await axios.post(`/api/v1/movie/search?page=${pageNum}`);
       const data = response.data?.data;
       if (response.data?.success && data && Array.isArray(data.movies)) {
         setMovies(data.movies);
@@ -38,7 +38,7 @@ function Dashboard() {
   const getPlayingMovies = async (pageNum) => {
     setListError(null);
     try {
-      const response = await publicAxios.post(`/api/v1/movie/playing/search?page=${pageNum}`);
+      const response = await axios.post(`/api/v1/movie/playing/search?page=${pageNum}`);
       const data = response.data?.data;
       if (response.data?.success && data && Array.isArray(data.movies)) {
         setMovies(data.movies);
