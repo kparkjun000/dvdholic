@@ -20,49 +20,39 @@ public class MovieService implements FetchMovieUseCase, InsertMovieUseCase, Down
     private final TmdbMoviePlayingPort tmdbMoviePlayingPort;
     private final PersistenceMoviePort persistenceMoviePort;
 
+    private static final int PAGE_SIZE = 10;
+
     @Override
     public MoviePageableResponse fetchFromClient(int page) {
         NetplixPageableMovies movies = tmdbMoviePort.fetchPageable(page);
-        // Limit to 10 items per page for faster loading
-        List<NetplixMovie> limitedMovies = movies.getNetplixMovies().size() > 10 
-            ? movies.getNetplixMovies().subList(0, 10) 
+        List<NetplixMovie> limited = movies.getNetplixMovies().size() > PAGE_SIZE
+            ? movies.getNetplixMovies().subList(0, PAGE_SIZE)
             : movies.getNetplixMovies();
-        return new MoviePageableResponse(limitedMovies, page, movies.isHasNext());
+        return new MoviePageableResponse(limited, page, movies.isHasNext());
+    }
+
+    @Override
+    public MoviePageableResponse fetchPlayingFromClient(int page) {
+        NetplixPageableMovies playing = tmdbMoviePlayingPort.fetchPageable(page);
+        List<NetplixMovie> limited = playing.getNetplixMovies().size() > PAGE_SIZE
+            ? playing.getNetplixMovies().subList(0, PAGE_SIZE)
+            : playing.getNetplixMovies();
+        return new MoviePageableResponse(limited, page, playing.isHasNext());
     }
 
     @Override
     public MoviePageableResponse fetchFromDb(int page) {
-        int pageSize = 10;
-        
-        // Fetch DVD content from DB (contentType = "dvd")
-        List<NetplixMovie> netplixMovies = persistenceMoviePort.fetchByContentType("dvd", page, pageSize + 1);
-        
-        // Check if there's a next page
-        boolean hasNext = netplixMovies.size() > pageSize;
-        
-        // Return only pageSize items
-        List<NetplixMovie> resultMovies = hasNext 
-            ? netplixMovies.subList(0, pageSize) 
-            : netplixMovies;
-        
+        List<NetplixMovie> netplixMovies = persistenceMoviePort.fetchByContentType("dvd", page, PAGE_SIZE + 1);
+        boolean hasNext = netplixMovies.size() > PAGE_SIZE;
+        List<NetplixMovie> resultMovies = hasNext ? netplixMovies.subList(0, PAGE_SIZE) : netplixMovies;
         return new MoviePageableResponse(resultMovies, page, hasNext);
     }
 
     @Override
     public MoviePageableResponse fetchMoviesFromClient(int page) {
-        int pageSize = 10;
-        
-        // Fetch Movie content from DB (contentType = "movie")
-        List<NetplixMovie> netplixMovies = persistenceMoviePort.fetchByContentType("movie", page, pageSize + 1);
-        
-        // Check if there's a next page
-        boolean hasNext = netplixMovies.size() > pageSize;
-        
-        // Return only pageSize items
-        List<NetplixMovie> resultMovies = hasNext 
-            ? netplixMovies.subList(0, pageSize) 
-            : netplixMovies;
-        
+        List<NetplixMovie> netplixMovies = persistenceMoviePort.fetchByContentType("movie", page, PAGE_SIZE + 1);
+        boolean hasNext = netplixMovies.size() > PAGE_SIZE;
+        List<NetplixMovie> resultMovies = hasNext ? netplixMovies.subList(0, PAGE_SIZE) : netplixMovies;
         return new MoviePageableResponse(resultMovies, page, hasNext);
     }
 

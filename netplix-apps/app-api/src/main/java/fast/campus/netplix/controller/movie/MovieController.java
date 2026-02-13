@@ -21,13 +21,13 @@ public class MovieController {
 
     @PostMapping("/search")
     public NetplixApiResponse<MoviePageableResponse> search(@RequestParam int page) {
-        MoviePageableResponse fetch = fetchMovieUseCase.fetchFromDb(page);
+        MoviePageableResponse fetch = fetchMovieUseCase.fetchFromClient(page);
         return NetplixApiResponse.ok(fetch);
     }
 
     @PostMapping("/playing/search")
     public NetplixApiResponse<MoviePageableResponse> searchMovies(@RequestParam int page) {
-        MoviePageableResponse fetch = fetchMovieUseCase.fetchMoviesFromClient(page);
+        MoviePageableResponse fetch = fetchMovieUseCase.fetchPlayingFromClient(page);
         return NetplixApiResponse.ok(fetch);
     }
 
