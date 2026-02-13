@@ -15,7 +15,9 @@ axios.interceptors.request.use(
     const url = config.url || "";
     const isPublicMovieList =
       url.includes("/api/v1/movie/search") || url.includes("/api/v1/movie/playing/search");
-    if (!isPublicMovieList) {
+    if (isPublicMovieList) {
+      delete config.headers.Authorization;
+    } else {
       const token = localStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -48,5 +50,10 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// 공개 목록 API 전용 인스턴스: 토큰을 절대 붙이지 않음 (카카오 로그인 후에도 목록 401 방지)
+export const publicAxios = axios.create({
+  baseURL: axios.defaults.baseURL,
+});
 
 export default axios;

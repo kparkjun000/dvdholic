@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "../axiosConfig";
+import axios, { publicAxios } from "../axiosConfig";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function Dashboard() {
@@ -14,10 +14,11 @@ function Dashboard() {
   const [contentType, setContentType] = useState("dvd"); // "dvd" 또는 "movie"
   const [listError, setListError] = useState(null); // 목록 로드 실패 시 메시지
 
+  // 목록 API는 로그인 여부와 관계없이 항상 토큰 없이 호출 (일반/카카오 동일 동작)
   const getMovies = async (pageNum) => {
     setListError(null);
     try {
-      const response = await axios.post(`/api/v1/movie/search?page=${pageNum}`);
+      const response = await publicAxios.post(`/api/v1/movie/search?page=${pageNum}`);
       const data = response.data?.data;
       if (response.data?.success && data && Array.isArray(data.movies)) {
         setMovies(data.movies);
@@ -28,21 +29,16 @@ function Dashboard() {
         setHasNext(false);
       }
     } catch (error) {
-      console.error("영화 조회 실패:", error);
       setMovies([]);
       setHasNext(false);
-      setListError(
-        error.response?.status === 401
-          ? "목록을 보려면 로그인할 필요는 없지만, 서버 연결에 실패했을 수 있습니다."
-          : "DVD 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요."
-      );
+      setListError("DVD 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.");
     }
   };
 
   const getPlayingMovies = async (pageNum) => {
     setListError(null);
     try {
-      const response = await axios.post(`/api/v1/movie/playing/search?page=${pageNum}`);
+      const response = await publicAxios.post(`/api/v1/movie/playing/search?page=${pageNum}`);
       const data = response.data?.data;
       if (response.data?.success && data && Array.isArray(data.movies)) {
         setMovies(data.movies);
@@ -53,14 +49,9 @@ function Dashboard() {
         setHasNext(false);
       }
     } catch (error) {
-      console.error("영화 정보 조회 실패:", error);
       setMovies([]);
       setHasNext(false);
-      setListError(
-        error.response?.status === 401
-          ? "목록을 보려면 로그인할 필요는 없지만, 서버 연결에 실패했을 수 있습니다."
-          : "영화 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요."
-      );
+      setListError("영화 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.");
     }
   };
 

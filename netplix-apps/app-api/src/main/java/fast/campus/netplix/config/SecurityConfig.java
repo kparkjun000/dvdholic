@@ -1,6 +1,7 @@
 package fast.campus.netplix.config;
 
 import fast.campus.netplix.filter.JwtAuthenticationFilter;
+import fast.campus.netplix.filter.PublicMovieListRequestFilter;
 import fast.campus.netplix.filter.UserHistoryLoggingFilter;
 import fast.campus.netplix.security.NetplixUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class SecurityConfig {
 
     private final NetplixUserDetailsService netplixUserDetailsService;
 
+    private final PublicMovieListRequestFilter publicMovieListRequestFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserHistoryLoggingFilter userHistoryLoggingFilter;
 
@@ -65,6 +67,7 @@ public class SecurityConfig {
 
         httpSecurity.userDetailsService(netplixUserDetailsService);
 
+        httpSecurity.addFilterBefore(publicMovieListRequestFilter, JwtAuthenticationFilter.class);
         httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         httpSecurity.addFilterAfter(userHistoryLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 
