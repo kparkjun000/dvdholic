@@ -5,6 +5,8 @@ import {
   Route,
   Routes,
   useLocation,
+  useSearchParams,
+  Navigate,
 } from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -14,6 +16,28 @@ import ProtectedRoute from "./ProtectedRoute";
 import Main from "./pages/Main";
 import KakaoAuthRedirect from "./pages/KakaoAuthRedirect";
 import "./axiosConfig"; // Axios 인터셉터 설정
+
+/** 카카오 로그인 리다이렉트 시 URL의 token을 먼저 저장한 뒤 대시보드 표시 (ProtectedRoute보다 먼저 토큰 처리) */
+function DashboardRoute() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get("token");
+  const refreshFromUrl = searchParams.get("refresh_token");
+
+  if (tokenFromUrl) {
+    localStorage.setItem("token", tokenFromUrl);
+    if (refreshFromUrl) localStorage.setItem("refresh_token", refreshFromUrl);
+  }
+
+  useEffect(() => {
+    if (searchParams.get("token")) {
+      setSearchParams({});
+      window.dispatchEvent(new CustomEvent("token-stored"));
+    }
+  }, [searchParams, setSearchParams]);
+
+  if (!localStorage.getItem("token")) return <Navigate to="/login" replace />;
+  return <Dashboard />;
+}
 
 function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
@@ -257,14 +281,7 @@ function AppContent() {
             element={<KakaoAuthRedirect />}
           />
 
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/dashboard" element={<DashboardRoute />} />
         </Routes>
       </div>
     </div>

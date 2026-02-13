@@ -36,6 +36,12 @@ function Dashboard() {
   const [contentType, setContentType] = useState("dvd"); // "dvd" 또는 "movie"
   const [listError, setListError] = useState(null); // 목록 로드 실패 시 메시지
 
+  // 대시보드 진입 시 기본 DVD 목록 자동 조회 (MOVIE/DVD Select 버튼과 동일하게 목록 표시)
+  useEffect(() => {
+    getMovies(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 목록 API: fetch로 토큰 없이 호출 (일반/카카오 동일하게 동작)
   const getMovies = async (pageNum) => {
     setListError(null);
