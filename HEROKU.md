@@ -39,10 +39,12 @@ Heroku 대시보드 → dvdholic → Settings → Config Vars 에서 아래 추�
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID` | 카카오 REST API 키 (기존 KAKAO_CLIENT_ID 값과 동일) |
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET` | 카카오 Client Secret (기존 KAKAO_CLIENT_SECRET 값과 동일) |
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI` | `https://dvdholic.herokuapp.com/login/oauth2/code/kakao` |
-| `JWT_SECRET` | JWT 서명 시크릿 (32자 이상) |
-| `AES_SECRET` | AES 암호화 시크릿 |
+| `APP_JWT_SECRET` | JWT 서명 시크릿 (32자 이상). **값은 실제 문자열만** 넣고, `"${JWT_SECRET}"` 같은 글자 그대로 넣지 말 것. |
+| `APP_AES_SECRET` | AES 암호화 시크릿 (동일하게 실제 값만) |
 
-**카카오 관련:** Circular reference 방지를 위해 위 세 개의 **긴 이름(SPRING_SECURITY_...)** 으로 설정해야 합니다.
+**카카오:** Circular reference 방지를 위해 세 개는 **긴 이름(SPRING_SECURITY_...)** 으로 설정.
+
+**JWT/AES:** `APP_JWT_SECRET`, `APP_AES_SECRET` 에 **실제 시크릿 문자열**을 넣어야 합니다. `"${JWT_SECRET}"` 처럼 넣으면 앱이 크래시합니다.
 
 **DB 관련:** 로컬은 Docker MySQL(`localhost`) 그대로 사용. Heroku는 아래 5절처럼 add-on 추가 후 `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` 설정.
 

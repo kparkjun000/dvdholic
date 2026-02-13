@@ -17,6 +17,48 @@
 
 자세한 예시는 **`env.example`** 파일을 참고하세요.
 
+### JWT_SECRET / AES_SECRET 값을 모를 때 (새로 만들기)
+
+이 값들은 **코드/저장소에 없고**, 예전에 `.env`나 `application-local.yml`, IDE 환경 변수에 넣었을 수 있습니다.  
+**못 찾겠으면 새로 생성**해서 로컬과 Heroku 둘 다 같은 값으로 맞추거나, 로컬용·Heroku용 각각 새로 만들어 쓰면 됩니다.
+
+**1) 터미널에서 랜덤 시크릿 생성**
+
+Windows PowerShell (프로젝트 루트에서):
+
+```powershell
+# JWT_SECRET용 (32자 이상 권장)
+-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 40 | ForEach-Object { [char]$_ })
+
+# 한 번 더 실행해서 AES_SECRET용으로 하나 더 복사
+-join ((48..57) + (65..90) + (97..122) | Get-Random -Count 40 | ForEach-Object { [char]$_ })
+```
+
+macOS/Linux (또는 Git Bash):
+
+```bash
+# JWT_SECRET용
+openssl rand -base64 32
+
+# AES_SECRET용 (한 번 더 실행)
+openssl rand -base64 32
+```
+
+**2) 생성한 값 넣는 곳**
+
+- **로컬**: `netplix-apps/app-api/src/main/resources/application-local.yml` 에 아래처럼 추가 (파일 없으면 생성).  
+  또는 프로젝트 루트에 `.env` 만들고 `JWT_SECRET=생성한값`, `AES_SECRET=생성한값` 넣은 뒤, IDE Run Configuration에서 EnvFile로 로드.
+
+```yaml
+# application-local.yml 예시 (나머지 DB, TMDB, Kakao 등은 본인 값으로)
+JWT_SECRET: 여기에_위에서_생성한_첫번째_문자열
+AES_SECRET: 여기에_위에서_생성한_두번째_문자열
+```
+
+- **Heroku**: Config Vars에 **APP_JWT_SECRET**, **APP_AES_SECRET** 키로 위에서 만든 값(또는 새로 생성한 값)을 **그대로** 넣기. (`"${JWT_SECRET}"` 같은 글자는 넣지 말 것.)
+
+로컬과 Heroku에서 **같은 JWT_SECRET 값**을 쓰면, 로컬에서 발급한 토큰을 Heroku API에 그대로 쓸 수 있습니다. 따로 쓰려면 각각 다른 값으로 만들어도 됩니다.
+
 ## 2. 설정 방법 (택 1)
 
 ### A) 시스템 환경 변수

@@ -177,6 +177,10 @@ public class TokenService implements FetchTokenUseCase, CreateTokenUseCase, Upda
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        // HS256 requires key size >= 256 bits (32 bytes) per RFC 7518
+        if (keyBytes.length < 32) {
+            keyBytes = java.util.Arrays.copyOf(keyBytes, 32);
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

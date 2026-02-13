@@ -23,14 +23,15 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+# Heroku: JWT_SECRET/AES_SECRET에 "${JWT_SECRET}" 넣으면 Circular reference → APP_* 사용. 로컬은 JWT_SECRET/AES_SECRET 가능
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${APP_JWT_SECRET:${JWT_SECRET:}}
   expire:
     access-token: 1
     refresh-token: 24
 
 aes:
-  secret: ${AES_SECRET}
+  secret: ${APP_AES_SECRET:${AES_SECRET:}}
 
 management:
   endpoints:
