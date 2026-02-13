@@ -1,33 +1,56 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../axiosConfig';
 
 function KakaoAuthRedirect() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // 현재 URL에서 카카오 인증 후 리턴된 authorization code 추출
-        const code = new URL(window.location.href).searchParams.get("code");
+        const code = new URL(window.location.href).searchParams.get('code');
 
-        // 백엔드에 인증 코드 전송하여 JWT 토큰 받기
         if (code) {
-            const apiBase = process.env.REACT_APP_API_URL || "http://localhost:8080";
-            axios.post(`${apiBase}/api/v1/auth/callback`, { code })
-                .then(response => {
-                    console.log(response)
-                    const token = response.data.data.accessToken;  // 백엔드에서 받은 JWT 토큰
-                    localStorage.setItem('token', token);  // 토큰을 localStorage에 저장
-                    navigate('/dashboard');  // 로그인 후 대시보드로 리디렉션
+            axios
+                .post('/api/v1/auth/callback', { code })
+                .then((response) => {
+                    const data = response.data?.data;
+                    if (data?.accessToken) {
+                        localStorage.setItem('token', data.accessToken);
+                        if (data.refreshToken) {
+                            localStorage.setItem('refresh_token', data.refreshToken);
+                        }
+                    }
+                    navigate('/dashboard', { replace: true });
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.error('카카오 로그인 실패:', error);
+                    navigate('/login', { replace: true });
                 });
+        } else {
+            navigate('/login', { replace: true });
         }
     }, [navigate]);
 
     return (
-        <div>
-            카카오 로그인 처리 중...
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                backgroundColor: '#141414',
+            }}
+        >
+            <div
+                style={{
+                    width: 40,
+                    height: 40,
+                    border: '3px solid rgba(255,255,255,0.2)',
+                    borderTopColor: '#E50914',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                }}
+            />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 }
