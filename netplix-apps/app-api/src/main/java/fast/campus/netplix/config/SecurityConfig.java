@@ -67,8 +67,9 @@ public class SecurityConfig {
 
         httpSecurity.userDetailsService(netplixUserDetailsService);
 
-        httpSecurity.addFilterBefore(publicMovieListRequestFilter, JwtAuthenticationFilter.class);
+        // Spring Security 6.3: addFilterBefore 기준은 registered order가 있는 필터만 가능 → UsernamePasswordAuthenticationFilter 기준으로 추가
         httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(publicMovieListRequestFilter, UsernamePasswordAuthenticationFilter.class);
         httpSecurity.addFilterAfter(userHistoryLoggingFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
