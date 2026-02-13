@@ -12,88 +12,55 @@ function Dashboard() {
   const [likeCount, setLikeCount] = useState(0); // 현재 영화의 좋아요 개수
   const [unlikeCount, setUnlikeCount] = useState(0); // 현재 영화의 싫어요 개수
   const [contentType, setContentType] = useState("dvd"); // "dvd" 또는 "movie"
+  const [listError, setListError] = useState(null); // 목록 로드 실패 시 메시지
 
   const getMovies = async (pageNum) => {
-    console.log("========== DVD 조회 시작 ==========");
-    console.log("요청 페이지:", pageNum);
-    console.log("Token:", localStorage.getItem("token"));
-
+    setListError(null);
     try {
-      // Axios 인터셉터가 자동으로 토큰을 추가하므로 헤더 설정 불필요
       const response = await axios.post(`/api/v1/movie/search?page=${pageNum}`);
-
-      console.log("전체 응답:", response);
-      console.log("응답 데이터:", response.data);
-      console.log("영화 데이터:", response.data.data);
-      console.log("페이지 번호:", response.data.data.page);
-      console.log("다음 페이지 있음:", response.data.data.hasNext);
-
-      if (response.data.success && response.data.data.movies) {
-        const movieData = response.data.data;
-        setMovies(movieData.movies);
-        setHasNext(movieData.hasNext);
-        setPage(pageNum); // API 응답 대신 요청한 페이지 번호 사용
-
-        console.log("✅ 영화 데이터 설정 완료:", movieData.movies.length, "개");
-        console.log("✅ 요청한 페이지:", pageNum);
-        console.log("✅ API 응답 페이지:", movieData.page);
-        console.log("✅ 다음 페이지 여부:", movieData.hasNext);
-
-        // 각 영화의 posterPath 확인
-        console.log("\n📽️ 각 영화의 posterPath 정보:");
-        movieData.movies.forEach((movie, index) => {
-          console.log(`${index + 1}. ${movie.movieName}`);
-          console.log(`   - posterPath: ${movie.posterPath}`);
-          console.log(
-            `   - 이미지 URL: ${
-              movie.posterPath
-                ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
-                : "null"
-            }`
-          );
-        });
+      const data = response.data?.data;
+      if (response.data?.success && data && Array.isArray(data.movies)) {
+        setMovies(data.movies);
+        setHasNext(Boolean(data.hasNext));
+        setPage(pageNum);
       } else {
-        console.log("영화 데이터가 없습니다.");
         setMovies([]);
+        setHasNext(false);
       }
-      console.log("========================================");
     } catch (error) {
       console.error("영화 조회 실패:", error);
-      if (error.response) {
-        console.error("에러 응답:", error.response.status, error.response.data);
-      }
+      setMovies([]);
+      setHasNext(false);
+      setListError(
+        error.response?.status === 401
+          ? "목록을 보려면 로그인할 필요는 없지만, 서버 연결에 실패했을 수 있습니다."
+          : "DVD 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요."
+      );
     }
   };
 
   const getPlayingMovies = async (pageNum) => {
-    console.log("========== 영화 정보 조회 시작 ==========");
-    console.log("요청 페이지:", pageNum);
-    console.log("Token:", localStorage.getItem("token"));
-
+    setListError(null);
     try {
       const response = await axios.post(`/api/v1/movie/playing/search?page=${pageNum}`);
-
-      console.log("전체 응답:", response);
-      console.log("응답 데이터:", response.data);
-
-      if (response.data.success && response.data.data.movies) {
-        const movieData = response.data.data;
-        setMovies(movieData.movies);
-        setHasNext(movieData.hasNext);
+      const data = response.data?.data;
+      if (response.data?.success && data && Array.isArray(data.movies)) {
+        setMovies(data.movies);
+        setHasNext(Boolean(data.hasNext));
         setPage(pageNum);
-
-        console.log("✅ 영화 정보 데이터 설정 완료:", movieData.movies.length, "개");
-        console.log("✅ 다음 페이지 여부:", movieData.hasNext);
       } else {
-        console.log("영화 데이터가 없습니다.");
         setMovies([]);
+        setHasNext(false);
       }
-      console.log("========================================");
     } catch (error) {
       console.error("영화 정보 조회 실패:", error);
-      if (error.response) {
-        console.error("에러 응답:", error.response.status, error.response.data);
-      }
+      setMovies([]);
+      setHasNext(false);
+      setListError(
+        error.response?.status === 401
+          ? "목록을 보려면 로그인할 필요는 없지만, 서버 연결에 실패했을 수 있습니다."
+          : "영화 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요."
+      );
     }
   };
 
@@ -317,6 +284,19 @@ function Dashboard() {
       </div>
 
       <div style={{ width: "100%", padding: "0 5px" }}>
+        {listError && (
+          <div
+            className="mb-3 p-3 rounded"
+            style={{
+              backgroundColor: "rgba(229, 9, 20, 0.15)",
+              border: "1px solid #E50914",
+              color: "#f5f5f5",
+              textAlign: "center",
+            }}
+          >
+            {listError}
+          </div>
+        )}
         {/* 페이지네이션 - 상단 (영화 데이터가 있을 때만 표시) */}
         {movies.length > 0 && (
           <div

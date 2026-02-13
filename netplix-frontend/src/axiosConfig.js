@@ -1,7 +1,13 @@
 import axios from "axios";
 
-// Axios 기본 설정
-axios.defaults.baseURL = process.env.REACT_APP_API_URL || "http://localhost:8080";
+// Axios 기본 설정: 프로덕션에서 REACT_APP_API_URL이 비어 있으면 같은 오리진(상대 경로) 사용
+const apiUrl = process.env.REACT_APP_API_URL;
+axios.defaults.baseURL =
+  apiUrl !== undefined && apiUrl !== ""
+    ? apiUrl
+    : process.env.NODE_ENV === "production"
+      ? ""
+      : "http://localhost:8080";
 
 // Request Interceptor: 모든 요청에 자동으로 토큰 추가
 axios.interceptors.request.use(
