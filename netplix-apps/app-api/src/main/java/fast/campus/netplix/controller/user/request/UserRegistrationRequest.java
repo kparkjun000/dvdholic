@@ -1,9 +1,7 @@
 package fast.campus.netplix.controller.user.request;
 
 import fast.campus.netplix.annotation.PasswordEncryption;
-import lombok.Getter;
 
-@Getter
 public class UserRegistrationRequest {
     private final String username;
 
@@ -19,5 +17,21 @@ public class UserRegistrationRequest {
         this.password = password;
         this.email = email;
         this.phone = phone;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 }

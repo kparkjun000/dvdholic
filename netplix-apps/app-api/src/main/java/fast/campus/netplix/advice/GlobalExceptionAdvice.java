@@ -3,14 +3,16 @@ package fast.campus.netplix.advice;
 import fast.campus.netplix.controller.NetplixApiResponse;
 import fast.campus.netplix.exception.ErrorCode;
 import fast.campus.netplix.exception.NetplixException;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionAdvice {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
 
     @ExceptionHandler(NetplixException.class)
     protected NetplixApiResponse<?> handleSecurityException(NetplixException e) {

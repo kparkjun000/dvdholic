@@ -1,8 +1,5 @@
 package fast.campus.netplix.controller.auth.request;
 
-import lombok.Getter;
-
-@Getter
 public class LoginRequest {
     private final String email;
     private final String password;
@@ -10,5 +7,13 @@ public class LoginRequest {
     public LoginRequest(String email, String password) {
         this.email = email;
         this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

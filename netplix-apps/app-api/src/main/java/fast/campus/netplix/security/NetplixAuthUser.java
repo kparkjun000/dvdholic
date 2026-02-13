@@ -1,12 +1,10 @@
 package fast.campus.netplix.security;
 
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
 
-@Getter
 public class NetplixAuthUser extends User {
 
     private final String userId;
@@ -23,5 +21,26 @@ public class NetplixAuthUser extends User {
         this.password = password;
         this.email = email;
         this.phone = phone;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
     }
 }
