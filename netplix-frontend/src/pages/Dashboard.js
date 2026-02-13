@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "../axiosConfig";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -35,21 +35,27 @@ function Dashboard() {
   const [unlikeCount, setUnlikeCount] = useState(0); // 현재 영화의 싫어요 개수
   const [contentType, setContentType] = useState("dvd"); // "dvd" 또는 "movie"
   const [listError, setListError] = useState(null); // 목록 로드 실패 시 메시지
+  const [listLoading, setListLoading] = useState(false);
+  const lastListRequestRef = useRef({ type: "dvd", page: 0 }); // 응답 경쟁 방지: 마지막 요청 타입/페이지만 반영
 
-  // 대시보드 진입 시 기본 DVD 목록 자동 조회 (MOVIE/DVD Select 버튼과 동일하게 목록 표시)
+  // 대시보드 진입 시 기본 DVD 목록 자동 조회
   useEffect(() => {
-    getMovies(0);
+    loadDvdList(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 목록 API: fetch로 토큰 없이 호출 (일반/카카오 동일하게 동작)
-  const getMovies = async (pageNum) => {
+  // DVD 목록 (Popular DVD Select)
+  const loadDvdList = async (pageNum) => {
+    const requestId = { type: "dvd", page: pageNum };
+    lastListRequestRef.current = requestId;
     setListError(null);
+    setListLoading(true);
     const base = getListBaseUrl();
     const url = base ? `${base.replace(/\/$/, "")}/api/v1/movie/search?page=${pageNum}` : `/api/v1/movie/search?page=${pageNum}`;
     try {
       const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" } });
       const json = await res.json();
+      if (lastListRequestRef.current !== requestId) return;
       if (!res.ok) {
         setMovies([]);
         setHasNext(false);
@@ -58,6 +64,7 @@ function Dashboard() {
       }
       const data = json?.data;
       if (json?.success && data && Array.isArray(data.movies)) {
+        setContentType("dvd");
         setMovies(data.movies);
         setHasNext(Boolean(data.hasNext));
         setPage(pageNum);
@@ -66,19 +73,27 @@ function Dashboard() {
         setHasNext(false);
       }
     } catch (err) {
+      if (lastListRequestRef.current !== requestId) return;
       setMovies([]);
       setHasNext(false);
       setListError("DVD 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      if (lastListRequestRef.current === requestId) setListLoading(false);
     }
   };
 
-  const getPlayingMovies = async (pageNum) => {
+  // 영화 목록 (Popular MOVIE Select)
+  const loadMovieList = async (pageNum) => {
+    const requestId = { type: "movie", page: pageNum };
+    lastListRequestRef.current = requestId;
     setListError(null);
+    setListLoading(true);
     const base = getListBaseUrl();
     const url = base ? `${base.replace(/\/$/, "")}/api/v1/movie/playing/search?page=${pageNum}` : `/api/v1/movie/playing/search?page=${pageNum}`;
     try {
       const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" } });
       const json = await res.json();
+      if (lastListRequestRef.current !== requestId) return;
       if (!res.ok) {
         setMovies([]);
         setHasNext(false);
@@ -87,6 +102,7 @@ function Dashboard() {
       }
       const data = json?.data;
       if (json?.success && data && Array.isArray(data.movies)) {
+        setContentType("movie");
         setMovies(data.movies);
         setHasNext(Boolean(data.hasNext));
         setPage(pageNum);
@@ -95,11 +111,17 @@ function Dashboard() {
         setHasNext(false);
       }
     } catch (err) {
+      if (lastListRequestRef.current !== requestId) return;
       setMovies([]);
       setHasNext(false);
       setListError("영화 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      if (lastListRequestRef.current === requestId) setListLoading(false);
     }
   };
+
+  const getMovies = loadDvdList;
+  const getPlayingMovies = loadMovieList;
 
   const handlePrevPage = () => {
     if (page > 0) {
@@ -258,11 +280,10 @@ function Dashboard() {
       <div className="mb-3 text-center" style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
         <button
           onClick={() => {
-            setContentType("movie");
             setPage(0);
             setMovies([]);
             setListError(null);
-            getPlayingMovies(0);
+            loadMovieList(0);
           }}
           style={{
             backgroundColor: contentType === "movie" ? "#CC4400" : "#FF5722",
@@ -291,11 +312,10 @@ function Dashboard() {
         </button>
         <button
           onClick={() => {
-            setContentType("dvd");
             setPage(0);
             setMovies([]);
             setListError(null);
-            getMovies(0);
+            loadDvdList(0);
           }}
           style={{
             backgroundColor: contentType === "dvd" ? "#B20710" : "#E50914",
@@ -325,6 +345,11 @@ function Dashboard() {
       </div>
 
       <div style={{ width: "100%", padding: "0 5px" }}>
+        {listLoading && (
+          <div className="mb-3 p-3 rounded text-center" style={{ color: "#f5f5f5" }}>
+            목록 불러오는 중...
+          </div>
+        )}
         {listError && (
           <div
             className="mb-3 p-3 rounded"
