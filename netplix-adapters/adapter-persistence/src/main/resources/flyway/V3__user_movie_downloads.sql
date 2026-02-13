@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `netplix`.`user_movie_downloads`;
-CREATE TABLE `netplix`.`user_movie_downloads`
+-- DROP 제거: JawsDB 등 호스팅 DB는 DROP 권한이 없을 수 있음
+CREATE TABLE IF NOT EXISTS `user_movie_downloads`
 (
     USER_MOVIE_DOWNLOAD_ID VARCHAR(255) NOT NULL COMMENT 'PK',
     USER_ID                VARCHAR(255) NOT NULL COMMENT '사용자 ID',
