@@ -19,16 +19,16 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class TmdbMovieListHttpClient implements TmdbMoviePort {
-    @Value("${tmdb.api.movie-lists.now-playing}")
-    private String nowPlaying;
+    @Value("${tmdb.api.movie-lists.popular}")
+    private String popularUrl;
 
     private final TmdbHttpClient tmdbHttpClient;
     private final TmdbMovieDetailsHttpClient tmdbMovieDetailsHttpClient;
 
     @Override
     public NetplixPageableMovies fetchPageable(int page) {
-        // TMDB API는 page가 1부터 시작하므로 +1 처리
-        String url = nowPlaying + "&language=ko-KR&page=" + (page + 1);
+        // TMDB API는 page가 1부터 시작하므로 +1 처리 (DVD = 인기 영화 목록)
+        String url = popularUrl + "&language=ko-KR&page=" + (page + 1);
         String request = tmdbHttpClient.request(url, HttpMethod.GET, CollectionUtils.toMultiValueMap(Map.of()), Map.of());
 
         TmdbResponse object = ObjectMapperUtil.toObject(request, TmdbResponse.class);
