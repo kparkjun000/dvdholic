@@ -42,4 +42,21 @@ public class MovieCustomRepositoryImpl implements MovieCustomRepository {
 
         return new PageImpl<>(fetch, pageable, count);
     }
+
+    @Override
+    public Page<MovieEntity> searchByContentType(String contentType, Pageable pageable) {
+        List<MovieEntity> fetch = jpaQueryFactory.selectFrom(movieEntity)
+                .where(movieEntity.contentType.eq(contentType))
+                .orderBy(movieEntity.movieId.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long count = jpaQueryFactory.selectFrom(movieEntity)
+                .where(movieEntity.contentType.eq(contentType))
+                .fetch()
+                .size();
+
+        return new PageImpl<>(fetch, pageable, count);
+    }
 }

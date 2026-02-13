@@ -9,9 +9,12 @@ function Dashboard() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentMovie, setCurrentMovie] = useState(null);
   const [imageTabStates, setImageTabStates] = useState({}); // 각 영화별 이미지 탭 상태
+  const [likeCount, setLikeCount] = useState(0); // 현재 영화의 좋아요 개수
+  const [unlikeCount, setUnlikeCount] = useState(0); // 현재 영화의 싫어요 개수
+  const [contentType, setContentType] = useState("dvd"); // "dvd" 또는 "movie"
 
   const getMovies = async (pageNum) => {
-    console.log("========== 영화 조회 시작 ==========");
+    console.log("========== DVD 조회 시작 ==========");
     console.log("요청 페이지:", pageNum);
     console.log("Token:", localStorage.getItem("token"));
 
@@ -62,11 +65,47 @@ function Dashboard() {
     }
   };
 
+  const getPlayingMovies = async (pageNum) => {
+    console.log("========== 영화 정보 조회 시작 ==========");
+    console.log("요청 페이지:", pageNum);
+    console.log("Token:", localStorage.getItem("token"));
+
+    try {
+      const response = await axios.post(`/api/v1/movie/playing/search?page=${pageNum}`);
+
+      console.log("전체 응답:", response);
+      console.log("응답 데이터:", response.data);
+
+      if (response.data.success && response.data.data.movies) {
+        const movieData = response.data.data;
+        setMovies(movieData.movies);
+        setHasNext(movieData.hasNext);
+        setPage(pageNum);
+
+        console.log("✅ 영화 정보 데이터 설정 완료:", movieData.movies.length, "개");
+        console.log("✅ 다음 페이지 여부:", movieData.hasNext);
+      } else {
+        console.log("영화 데이터가 없습니다.");
+        setMovies([]);
+      }
+      console.log("========================================");
+    } catch (error) {
+      console.error("영화 정보 조회 실패:", error);
+      if (error.response) {
+        console.error("에러 응답:", error.response.status, error.response.data);
+      }
+    }
+  };
+
   const handlePrevPage = () => {
     if (page > 0) {
       const prevPage = page - 1;
       setPage(prevPage);
-      getMovies(prevPage);
+      if (contentType === "dvd") {
+        getMovies(prevPage);
+      } else {
+        getPlayingMovies(prevPage);
+      }
     }
   };
 
@@ -74,7 +113,37 @@ function Dashboard() {
     if (hasNext) {
       const nextPage = page + 1;
       setPage(nextPage);
-      getMovies(nextPage);
+      if (contentType === "dvd") {
+        getMovies(nextPage);
+      } else {
+        getPlayingMovies(nextPage);
+      }
+    }
+  };
+
+  const getLikeCount = async (movieName) => {
+    try {
+      const response = await axios.get(`/api/v1/movie/${movieName}/like-count`);
+      if (response.data.success) {
+        setLikeCount(response.data.data);
+        console.log("좋아요 개수:", response.data.data);
+      }
+    } catch (error) {
+      console.error("좋아요 개수 조회 실패:", error);
+      setLikeCount(0);
+    }
+  };
+
+  const getUnlikeCount = async (movieName) => {
+    try {
+      const response = await axios.get(`/api/v1/movie/${movieName}/unlike-count`);
+      if (response.data.success) {
+        setUnlikeCount(response.data.data);
+        console.log("싫어요 개수:", response.data.data);
+      }
+    } catch (error) {
+      console.error("싫어요 개수 조회 실패:", error);
+      setUnlikeCount(0);
     }
   };
 
@@ -82,6 +151,9 @@ function Dashboard() {
     try {
       const response = await axios.post(`/api/v1/movie/${movieName}/like`);
       console.log("좋아요 성공:", response);
+      // 좋아요 후 개수 갱신
+      await getLikeCount(movieName);
+      await getUnlikeCount(movieName);
     } catch (error) {
       console.error("좋아요 실패:", error);
     }
@@ -91,6 +163,9 @@ function Dashboard() {
     try {
       const response = await axios.post(`/api/v1/movie/${movieName}/unlike`);
       console.log("싫어요 성공:", response);
+      // 싫어요 후 개수 갱신
+      await getLikeCount(movieName);
+      await getUnlikeCount(movieName);
     } catch (error) {
       console.error("싫어요 실패:", error);
     }
@@ -106,15 +181,20 @@ function Dashboard() {
   };
 
   // 상세 정보 모달 열기
-  const openDetailModal = (movie) => {
+  const openDetailModal = async (movie) => {
     setCurrentMovie(movie);
     setShowDetailModal(true);
+    // 좋아요, 싫어요 개수 조회
+    await getLikeCount(movie.movieName);
+    await getUnlikeCount(movie.movieName);
   };
 
   // 상세 정보 모달 닫기
   const closeDetailModal = () => {
     setShowDetailModal(false);
     setCurrentMovie(null);
+    setLikeCount(0);
+    setUnlikeCount(0);
   };
 
   // 이미지 탭 전환
@@ -141,11 +221,19 @@ function Dashboard() {
 
   // 설명 텍스트를 표시하는 함수
   const getDisplayOverview = (overview) => {
+    const noDescMessage = contentType === "movie" 
+      ? "이 영화, 말이 없네요 🤐" 
+      : "이 DVD, 말이 없네요 🤐";
+    
+    // overview가 없거나 비어있는 경우
+    if (!overview || overview.trim() === "") {
+      return noDescMessage;
+    }
     if (overview === "No description available.") {
-      return "이 영화, 말이 없네요 🤐";
+      return noDescMessage;
     }
     if (isCorruptedKorean(overview)) {
-      return "이 영화, 말이 없네요 🤐";
+      return noDescMessage;
     }
     return overview;
   };
@@ -163,11 +251,46 @@ function Dashboard() {
         overflowX: "hidden",
       }}
     >
-      <div className="mb-3 text-center">
+      <div className="mb-3 text-center" style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
         <button
-          onClick={() => getMovies(0)}
+          onClick={() => {
+            setContentType("movie");
+            setPage(0);
+            getPlayingMovies(0);
+          }}
           style={{
-            backgroundColor: "#E50914",
+            backgroundColor: contentType === "movie" ? "#CC4400" : "#FF5722",
+            color: "white",
+            border: "none",
+            padding: "12px 30px",
+            borderRadius: "5px",
+            cursor: "pointer",
+            fontSize: "16px",
+            fontWeight: "bold",
+            transition: "all 0.3s ease",
+            boxShadow: "0 4px 8px rgba(255, 87, 34, 0.3)",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#CC4400";
+            e.target.style.transform = "scale(1.05)";
+            e.target.style.boxShadow = "0 6px 12px rgba(255, 87, 34, 0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = contentType === "movie" ? "#CC4400" : "#FF5722";
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 4px 8px rgba(255, 87, 34, 0.3)";
+          }}
+        >
+          Popular MOVIE Select
+        </button>
+        <button
+          onClick={() => {
+            setContentType("dvd");
+            setPage(0);
+            getMovies(0);
+          }}
+          style={{
+            backgroundColor: contentType === "dvd" ? "#B20710" : "#E50914",
             color: "white",
             border: "none",
             padding: "12px 30px",
@@ -184,7 +307,7 @@ function Dashboard() {
             e.target.style.boxShadow = "0 6px 12px rgba(229, 9, 20, 0.5)";
           }}
           onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "#E50914";
+            e.target.style.backgroundColor = contentType === "dvd" ? "#B20710" : "#E50914";
             e.target.style.transform = "scale(1)";
             e.target.style.boxShadow = "0 4px 8px rgba(229, 9, 20, 0.3)";
           }}
@@ -713,7 +836,7 @@ function Dashboard() {
                           "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
                       }}
                     >
-                      📅 개봉일
+                      📅 {contentType === "movie" ? "개봉일" : "출시일"}
                     </span>
                     <span
                       style={{
@@ -750,7 +873,7 @@ function Dashboard() {
                           "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
                       }}
                     >
-                      ⏱️ 상영
+                      ⏱️ {contentType === "movie" ? "상영" : "러닝타임"}
                     </span>
                     <span
                       style={{
@@ -764,6 +887,44 @@ function Dashboard() {
                       }}
                     >
                       {currentMovie.runtime}분
+                    </span>
+                  </div>
+                )}
+                {currentMovie.genre && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "15px",
+                      width: "100%",
+                      alignSelf: "stretch",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#ffffff",
+                        fontSize: "20px",
+                        fontWeight: "bold",
+                        minWidth: "60px",
+                        fontFamily:
+                          "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                        whiteSpace: "nowrap",
+                        letterSpacing: "0",
+                      }}
+                    >
+                      🎭 장르
+                    </span>
+                    <span
+                      style={{
+                        color: "#fff",
+                        fontSize: "20px",
+                        fontFamily:
+                          "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                        fontWeight: "300",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      {currentMovie.genre}
                     </span>
                   </div>
                 )}
@@ -957,6 +1118,205 @@ function Dashboard() {
                         </span>
                       </div>
                     )}
+
+                    {/* 예고편 */}
+                    {currentMovie.trailerUrl && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "15px",
+                          width: "100%",
+                          alignSelf: "stretch",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#ffffff",
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            minWidth: "60px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                          }}
+                        >
+                          🎬 예고편
+                        </span>
+                        <a
+                          href={currentMovie.trailerUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: "#FF5722",
+                            fontSize: "18px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                            textDecoration: "none",
+                            fontWeight: "bold",
+                          }}
+                          onMouseEnter={(e) => e.target.style.textDecoration = "underline"}
+                          onMouseLeave={(e) => e.target.style.textDecoration = "none"}
+                        >
+                          YouTube 보기 ▶
+                        </a>
+                      </div>
+                    )}
+
+                    {/* OTT 제공 플랫폼 */}
+                    {currentMovie.ottProviders && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "15px",
+                          width: "100%",
+                          alignSelf: "stretch",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#ffffff",
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            minWidth: "60px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                          }}
+                        >
+                          📺 시청 가능
+                        </span>
+                        <span
+                          style={{
+                            color: "#fff",
+                            fontSize: "18px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                            fontWeight: "300",
+                          }}
+                        >
+                          {currentMovie.ottProviders}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 시리즈/컬렉션 정보 */}
+                    {currentMovie.collection && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "15px",
+                          width: "100%",
+                          alignSelf: "stretch",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#ffffff",
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            minWidth: "60px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                          }}
+                        >
+                          🎞️ 시리즈
+                        </span>
+                        <span
+                          style={{
+                            color: "#fff",
+                            fontSize: "18px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                            fontWeight: "300",
+                          }}
+                        >
+                          {currentMovie.collection}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 추천 영화 */}
+                    {currentMovie.recommendations && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "15px",
+                          width: "100%",
+                          alignSelf: "stretch",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#ffffff",
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            minWidth: "60px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                            whiteSpace: "nowrap",
+                            letterSpacing: "0",
+                          }}
+                        >
+                          💡 추천
+                        </span>
+                        <span
+                          style={{
+                            color: "#fff",
+                            fontSize: "16px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                            fontWeight: "300",
+                            lineHeight: "1.4",
+                          }}
+                        >
+                          {currentMovie.recommendations}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 대표 리뷰 */}
+                    {currentMovie.topReview && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                          width: "100%",
+                          alignSelf: "stretch",
+                          padding: "15px",
+                          backgroundColor: "rgba(255, 255, 255, 0.05)",
+                          borderRadius: "8px",
+                          borderLeft: "3px solid #FF5722",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "#ffffff",
+                            fontSize: "18px",
+                            fontWeight: "bold",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                          }}
+                        >
+                          ⭐ 관객 리뷰
+                        </span>
+                        <span
+                          style={{
+                            color: "#ddd",
+                            fontSize: "15px",
+                            fontFamily:
+                              "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                            fontWeight: "300",
+                            lineHeight: "1.6",
+                            fontStyle: "italic",
+                          }}
+                        >
+                          "{currentMovie.topReview}"
+                        </span>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -967,112 +1327,222 @@ function Dashboard() {
               style={{
                 display: "flex",
                 justifyContent: "space-around",
-                alignItems: "center",
+                alignItems: "flex-start",
                 padding: "20px",
                 gap: "15px",
               }}
             >
               {/* 좋아요 */}
-              <button
-                onClick={() => {
-                  like(currentMovie.movieName);
-                  closeDetailModal();
-                }}
+              <div
                 style={{
-                  border: "none",
-                  background: "none",
-                  padding: 0,
-                  width: "50px",
-                  height: "50px",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
+                  gap: "5px",
                 }}
               >
-                <img
-                  src="https://img.icons8.com/emoji/96/red-heart.png"
-                  alt="좋아요"
+                <button
+                  onClick={() => {
+                    like(currentMovie.movieName);
+                  }}
                   style={{
+                    border: "none",
+                    background: "none",
+                    padding: 0,
                     width: "50px",
                     height: "50px",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                    objectFit: "contain",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "scale(1.2)")
-                  }
-                  onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-                />
-              </button>
+                >
+                  <img
+                    src="https://img.icons8.com/emoji/96/red-heart.png"
+                    alt="좋아요"
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      cursor: "pointer",
+                      transition: "transform 0.2s",
+                      objectFit: "contain",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.target.style.transform = "scale(1.2)")
+                    }
+                    onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+                  />
+                </button>
+              </div>
 
               {/* 싫어요 */}
-              <button
-                onClick={() => {
-                  unlike(currentMovie.movieName);
-                  closeDetailModal();
-                }}
+              <div
                 style={{
-                  border: "none",
-                  background: "none",
-                  padding: 0,
-                  width: "50px",
-                  height: "50px",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
+                  gap: "5px",
                 }}
               >
-                <img
-                  src="https://img.icons8.com/fluency/96/thumbs-down.png"
-                  alt="싫어요"
+                <button
+                  onClick={() => {
+                    unlike(currentMovie.movieName);
+                  }}
                   style={{
+                    border: "none",
+                    background: "none",
+                    padding: 0,
                     width: "50px",
                     height: "50px",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                    objectFit: "contain",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "scale(1.2)")
-                  }
-                  onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-                />
-              </button>
+                >
+                  <img
+                    src="https://img.icons8.com/fluency/96/thumbs-down.png"
+                    alt="싫어요"
+                    style={{
+                      width: "50px",
+                      height: "50px",
+                      cursor: "pointer",
+                      transition: "transform 0.2s",
+                      objectFit: "contain",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.target.style.transform = "scale(1.2)")
+                    }
+                    onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+                  />
+                </button>
+              </div>
 
-              {/* 다운로드 */}
-              <button
-                onClick={() => {
-                  download(currentMovie.movieName);
-                  closeDetailModal();
-                }}
+              {/* 좋아요/싫어요 비율 */}
+              <div
                 style={{
-                  border: "none",
-                  background: "none",
-                  padding: 0,
-                  width: "50px",
-                  height: "50px",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
+                  gap: "8px",
                 }}
               >
-                <img
-                  src="https://img.icons8.com/emoji/96/down-arrow-emoji.png"
-                  alt="다운로드"
+                {/* 좋아요 막대 (빨강) */}
+                <div
                   style={{
-                    width: "50px",
-                    height: "50px",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                    objectFit: "contain",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.target.style.transform = "scale(1.2)")
-                  }
-                  onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-                />
-              </button>
+                >
+                  <span
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      minWidth: "30px",
+                      textAlign: "right",
+                      fontFamily:
+                        "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                    }}
+                  >
+                    👍
+                  </span>
+                  <div
+                    style={{
+                      width: "80px",
+                      height: "12px",
+                      backgroundColor: "#333",
+                      borderRadius: "6px",
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${
+                          likeCount + unlikeCount > 0
+                            ? (likeCount / (likeCount + unlikeCount)) * 100
+                            : 50
+                        }%`,
+                        height: "100%",
+                        backgroundColor: "#ff0000",
+                        borderRadius: "6px",
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                  <span
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "13px",
+                      fontWeight: "bold",
+                      minWidth: "25px",
+                      fontFamily:
+                        "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                    }}
+                  >
+                    {likeCount}
+                  </span>
+                </div>
+
+                {/* 싫어요 막대 (노랑) */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      minWidth: "30px",
+                      textAlign: "right",
+                      fontFamily:
+                        "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                    }}
+                  >
+                    👎
+                  </span>
+                  <div
+                    style={{
+                      width: "80px",
+                      height: "12px",
+                      backgroundColor: "#333",
+                      borderRadius: "6px",
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${
+                          likeCount + unlikeCount > 0
+                            ? (unlikeCount / (likeCount + unlikeCount)) * 100
+                            : 50
+                        }%`,
+                        height: "100%",
+                        backgroundColor: "#FFC107",
+                        borderRadius: "6px",
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                  <span
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "13px",
+                      fontWeight: "bold",
+                      minWidth: "25px",
+                      fontFamily:
+                        "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+                    }}
+                  >
+                    {unlikeCount}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

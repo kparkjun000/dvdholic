@@ -11,7 +11,8 @@ function KakaoAuthRedirect() {
 
         // 백엔드에 인증 코드 전송하여 JWT 토큰 받기
         if (code) {
-            axios.post('http://localhost:8080/api/v1/auth/callback', { code })
+            const apiBase = process.env.REACT_APP_API_URL || "http://localhost:8080";
+            axios.post(`${apiBase}/api/v1/auth/callback`, { code })
                 .then(response => {
                     console.log(response)
                     const token = response.data.data.accessToken;  // 백엔드에서 받은 JWT 토큰

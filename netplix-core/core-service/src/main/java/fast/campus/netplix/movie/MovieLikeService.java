@@ -34,4 +34,14 @@ public class MovieLikeService implements LikeMovieUseCase {
         likeMoviePort.save(userMovieLike);
         return true;
     }
+    
+    @Override
+    public Long getLikeCount(String movieId) {
+        return likeMoviePort.countLikesByMovieId(movieId);
+    }
+    
+    @Override
+    public Long getUnlikeCount(String movieId) {
+        return likeMoviePort.countUnlikesByMovieId(movieId);
+    }
 }

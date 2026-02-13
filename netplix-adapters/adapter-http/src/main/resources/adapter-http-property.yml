@@ -1,14 +1,18 @@
 tmdb:
   auth:
-    api-key: 486d0db4fa8e48a014a6d0ca36c98adb
-    access-token: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0ODZkMGRiNGZhOGU0OGEwMTRhNmQwY2EzNmM5OGFkYiIsIm5iZiI6MTc3MDMxNzM2NS44NzAwMDAxLCJzdWIiOiI2OTg0ZTYzNTc2Yjc5ODVlYjY5OTk2MjIiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.DmCGiEckkFtRqVIS2isi7F6eGQrikDe_Vyfz93ylTmA
-
+    api-key: ${TMDB_API_KEY}
+    access-token: ${TMDB_ACCESS_TOKEN:}
   api:
     movie-lists:
-      now-playing: https://api.themoviedb.org/3/discover/movie?api_key=486d0db4fa8e48a014a6d0ca36c98adb&with_release_type=5
-      popular: https://api.themoviedb.org/3/movie/popular
-      top-rated: https://api.themoviedb.org/3/movie/top_rated
-      upcoming: https://api.themoviedb.org/3/movie/upcoming
-    movie-details: https://api.themoviedb.org/3/movie/{movie_id}?api_key=486d0db4fa8e48a014a6d0ca36c98adb&language=ko-KR
-    movie-credits: https://api.themoviedb.org/3/movie/{movie_id}/credits?api_key=486d0db4fa8e48a014a6d0ca36c98adb
-    movie-release-dates: https://api.themoviedb.org/3/movie/{movie_id}/release_dates?api_key=486d0db4fa8e48a014a6d0ca36c98adb
+      now-playing: https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_release_type=5
+      movie-playing: https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}
+      popular: https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}
+      top-rated: https://api.themoviedb.org/3/movie/top_rated?api_key=${TMDB_API_KEY}
+      upcoming: https://api.themoviedb.org/3/movie/upcoming?api_key=${TMDB_API_KEY}
+    movie-details: https://api.themoviedb.org/3/movie/{movie_id}?api_key=${TMDB_API_KEY}&language=ko-KR
+    movie-credits: https://api.themoviedb.org/3/movie/{movie_id}/credits?api_key=${TMDB_API_KEY}
+    movie-release-dates: https://api.themoviedb.org/3/movie/{movie_id}/release_dates?api_key=${TMDB_API_KEY}
+    movie-videos: https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key=${TMDB_API_KEY}&language=ko-KR
+    movie-providers: https://api.themoviedb.org/3/movie/{movie_id}/watch/providers?api_key=${TMDB_API_KEY}
+    movie-recommendations: https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key=${TMDB_API_KEY}&language=ko-KR&page=1
+    movie-reviews: https://api.themoviedb.org/3/movie/{movie_id}/reviews?api_key=${TMDB_API_KEY}&language=ko-KR&page=1

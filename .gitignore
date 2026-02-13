@@ -50,3 +50,12 @@ bin/
 .LSOverride
 
 .jqwik-database
+
+# 로컬 비밀/키 (절대 커밋하지 말 것)
+**/application-local.yml
+**/.env
+**/.env.local
+*.local.yml
+.env
+.env.local
+env.local

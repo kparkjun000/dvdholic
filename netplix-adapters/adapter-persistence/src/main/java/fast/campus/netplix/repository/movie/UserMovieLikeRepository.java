@@ -28,4 +28,16 @@ public class UserMovieLikeRepository implements LikeMoviePort {
         return userMovieLikeJpaRepository.findByUserIdAndMovieId(userId, movieId)
                 .map(UserMovieLikeEntity::toDomain);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Long countLikesByMovieId(String movieId) {
+        return userMovieLikeJpaRepository.countLikesByMovieId(movieId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Long countUnlikesByMovieId(String movieId) {
+        return userMovieLikeJpaRepository.countUnlikesByMovieId(movieId);
+    }
 }

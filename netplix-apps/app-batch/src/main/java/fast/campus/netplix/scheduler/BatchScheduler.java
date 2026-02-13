@@ -21,15 +21,15 @@ public class BatchScheduler {
     private final ApplicationContext applicationContext;
 
     /**
-     * TMDB에서 최신 영화 목록을 가져오는 배치
+     * TMDB에서 최신 DVD 목록을 가져오는 배치
      * 매일 새벽 2시에 실행
      * cron: 초(0) 분(0) 시(2) 일(*) 월(*) 요일(*)
      */
     @Scheduled(cron = "0 0 2 * * *")
-    public void runMigrateMoviesBatch() {
+    public void runMigrateDvdBatch() {
         try {
             log.info("========================================");
-            log.info("=== 영화 목록 업데이트 배치 시작 ===");
+            log.info("=== DVD 목록 업데이트 배치 시작 ===");
             log.info("=== 실행 시간: {} ===", LocalDateTime.now());
             log.info("========================================");
 
@@ -43,12 +43,45 @@ public class BatchScheduler {
             jobLauncher.run(job, jobParameters);
 
             log.info("========================================");
-            log.info("=== 영화 목록 업데이트 배치 완료 ===");
+            log.info("=== DVD 목록 업데이트 배치 완료 ===");
             log.info("========================================");
 
         } catch (Exception e) {
             log.error("========================================");
-            log.error("=== 영화 목록 업데이트 배치 실패 ===");
+            log.error("=== DVD 목록 업데이트 배치 실패 ===");
+            log.error("=== 에러: {} ===", e.getMessage(), e);
+            log.error("========================================");
+        }
+    }
+
+    /**
+     * TMDB에서 최신 영화 정보를 가져오는 배치
+     * 매일 새벽 2시 30분에 실행
+     * cron: 초(0) 분(30) 시(2) 일(*) 월(*) 요일(*)
+     */
+    @Scheduled(cron = "0 30 2 * * *")
+    public void runMigrateMoviesBatch() {
+        try {
+            log.info("========================================");
+            log.info("=== 영화 정보 업데이트 배치 시작 ===");
+            log.info("=== 실행 시간: {} ===", LocalDateTime.now());
+            log.info("========================================");
+
+            Job job = applicationContext.getBean("MigrateMoviesPlayingFromTmdbBatch", Job.class);
+            
+            JobParameters jobParameters = new JobParametersBuilder()
+                    .addLong("timestamp", System.currentTimeMillis())
+                    .toJobParameters();
+
+            jobLauncher.run(job, jobParameters);
+
+            log.info("========================================");
+            log.info("=== 영화 정보 업데이트 배치 완료 ===");
+            log.info("========================================");
+
+        } catch (Exception e) {
+            log.error("========================================");
+            log.error("=== 영화 정보 업데이트 배치 실패 ===");
             log.error("=== 에러: {} ===", e.getMessage(), e);
             log.error("========================================");
         }

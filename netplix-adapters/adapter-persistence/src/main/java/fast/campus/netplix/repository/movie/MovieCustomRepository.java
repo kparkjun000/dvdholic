@@ -10,4 +10,6 @@ public interface MovieCustomRepository {
     Optional<MovieEntity> findByMovieName(String name);
 
     Page<MovieEntity> search(Pageable pageable);
+
+    Page<MovieEntity> searchByContentType(String contentType, Pageable pageable);
 }

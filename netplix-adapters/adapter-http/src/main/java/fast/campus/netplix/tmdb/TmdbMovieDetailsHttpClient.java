@@ -25,10 +25,22 @@ public class TmdbMovieDetailsHttpClient {
     @Value("${tmdb.api.movie-release-dates}")
     private String movieReleaseDatesUrl;
 
+    @Value("${tmdb.api.movie-videos}")
+    private String movieVideosUrl;
+
+    @Value("${tmdb.api.movie-providers}")
+    private String movieProvidersUrl;
+
+    @Value("${tmdb.api.movie-recommendations}")
+    private String movieRecommendationsUrl;
+
+    @Value("${tmdb.api.movie-reviews}")
+    private String movieReviewsUrl;
+
     private RestClient createRestClientWithTimeout() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(2000); // 2 seconds
-        factory.setReadTimeout(2000); // 2 seconds
+        factory.setConnectTimeout(Duration.ofSeconds(10));
+        factory.setReadTimeout(Duration.ofSeconds(30));
         
         return RestClient.builder()
                 .requestFactory(factory)
@@ -74,4 +86,126 @@ public class TmdbMovieDetailsHttpClient {
     }
 
     // Certification API removed - too slow and causes batch to hang
+
+    public String fetchMovieTrailer(Integer movieId) {
+        try {
+            log.debug("→ Fetching trailer for movieId: {}", movieId);
+            String url = movieVideosUrl.replace("{movie_id}", String.valueOf(movieId));
+            String response = createRestClientWithTimeout()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .body(String.class);
+
+            // Extract YouTube trailer key from response
+            if (response != null && response.contains("\"key\":")) {
+                String[] parts = response.split("\"key\":\"");
+                if (parts.length > 1) {
+                    String key = parts[1].split("\"")[0];
+                    log.debug("✓ Trailer found for movieId: {}", movieId);
+                    return "https://www.youtube.com/watch?v=" + key;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            log.warn("✗ Failed to fetch trailer for movieId: {} - {}", movieId, e.getMessage());
+            return null;
+        }
+    }
+
+    public String fetchOttProviders(Integer movieId) {
+        try {
+            log.debug("→ Fetching OTT providers for movieId: {}", movieId);
+            String url = movieProvidersUrl.replace("{movie_id}", String.valueOf(movieId));
+            String response = createRestClientWithTimeout()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .body(String.class);
+
+            // Extract provider names for KR region
+            if (response != null && response.contains("\"KR\"")) {
+                StringBuilder providers = new StringBuilder();
+                if (response.contains("\"provider_name\":\"Netflix\"")) providers.append("Netflix, ");
+                if (response.contains("\"provider_name\":\"Disney Plus\"")) providers.append("Disney+, ");
+                if (response.contains("\"provider_name\":\"Watcha\"")) providers.append("Watcha, ");
+                if (response.contains("\"provider_name\":\"wavve\"")) providers.append("Wavve, ");
+                if (response.contains("\"provider_name\":\"Apple TV Plus\"")) providers.append("Apple TV+, ");
+                
+                if (providers.length() > 0) {
+                    providers.setLength(providers.length() - 2); // Remove trailing ", "
+                    log.debug("✓ OTT providers found for movieId: {}", movieId);
+                    return providers.toString();
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            log.warn("✗ Failed to fetch OTT providers for movieId: {} - {}", movieId, e.getMessage());
+            return null;
+        }
+    }
+
+    public String fetchRecommendations(Integer movieId) {
+        try {
+            log.debug("→ Fetching recommendations for movieId: {}", movieId);
+            String url = movieRecommendationsUrl.replace("{movie_id}", String.valueOf(movieId));
+            String response = createRestClientWithTimeout()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .body(String.class);
+
+            // Extract top 5 movie titles
+            if (response != null && response.contains("\"title\":")) {
+                String[] titles = response.split("\"title\":\"");
+                StringBuilder recommendations = new StringBuilder();
+                int count = 0;
+                for (int i = 1; i < titles.length && count < 5; i++) {
+                    String title = titles[i].split("\"")[0];
+                    recommendations.append(title).append(", ");
+                    count++;
+                }
+                
+                if (recommendations.length() > 0) {
+                    recommendations.setLength(recommendations.length() - 2); // Remove trailing ", "
+                    log.debug("✓ Recommendations found for movieId: {}", movieId);
+                    return recommendations.toString();
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            log.warn("✗ Failed to fetch recommendations for movieId: {} - {}", movieId, e.getMessage());
+            return null;
+        }
+    }
+
+    public String fetchTopReview(Integer movieId) {
+        try {
+            log.debug("→ Fetching reviews for movieId: {}", movieId);
+            String url = movieReviewsUrl.replace("{movie_id}", String.valueOf(movieId));
+            String response = createRestClientWithTimeout()
+                    .get()
+                    .uri(url)
+                    .retrieve()
+                    .body(String.class);
+
+            // Extract first review content
+            if (response != null && response.contains("\"content\":\"")) {
+                String[] parts = response.split("\"content\":\"");
+                if (parts.length > 1) {
+                    String content = parts[1].split("\"")[0];
+                    // Limit to 200 characters
+                    if (content.length() > 200) {
+                        content = content.substring(0, 200) + "...";
+                    }
+                    log.debug("✓ Review found for movieId: {}", movieId);
+                    return content;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            log.warn("✗ Failed to fetch reviews for movieId: {} - {}", movieId, e.getMessage());
+            return null;
+        }
+    }
 }

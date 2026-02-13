@@ -180,3 +180,16 @@ configureByLabels("querydsl") {
         annotationProcessor("jakarta.annotation:jakarta.annotation-api")
     }
 }
+
+// Heroku 배포: API jar를 루트 build/libs로 복사 (Procfile에서 사용)
+tasks.register("stage") {
+    dependsOn(":netplix-apps:app-api:bootJar")
+    doLast {
+        val apiProject = project(":netplix-apps:app-api")
+        val bootJarTask = apiProject.tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar")
+        val srcFile = bootJarTask.archiveFile.get().asFile
+        val destDir = file("build/libs")
+        destDir.mkdirs()
+        srcFile.copyTo(destDir.resolve("app.jar"), overwrite = true)
+    }
+}

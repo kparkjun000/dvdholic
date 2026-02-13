@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 public class TmdbMovieDetails {
@@ -18,4 +19,14 @@ public class TmdbMovieDetails {
     
     @JsonProperty("release_date")
     private String releaseDate;
+    
+    @JsonProperty("belongs_to_collection")
+    private Map<String, Object> belongsToCollection;
+    
+    public String getCollectionName() {
+        if (belongsToCollection != null && belongsToCollection.get("name") != null) {
+            return (String) belongsToCollection.get("name");
+        }
+        return null;
+    }
 }

@@ -38,7 +38,8 @@ function Login({ setIsLoggedIn }) {
   };
 
   const handleKakaoLogin = () => {
-    window.location.href = `http://localhost:8080/oauth2/authorization/kakao`; // 카카오 로그인 페이지로 리디렉션
+    const apiBase = process.env.REACT_APP_API_URL || "http://localhost:8080";
+    window.location.href = `${apiBase}/oauth2/authorization/kakao`; // 카카오 로그인 페이지로 리디렉션
   };
 
   return (
@@ -72,7 +73,7 @@ function Login({ setIsLoggedIn }) {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="danny.kim@kakaobank.com"
+              placeholder="spring.park@kakaobank.com"
             />
           </div>
           <div className="mb-3">

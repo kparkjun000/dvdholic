@@ -3,7 +3,6 @@ package fast.campus.netplix.batch;
 import fast.campus.netplix.movie.FetchMovieUseCase;
 import fast.campus.netplix.movie.InsertMovieUseCase;
 import fast.campus.netplix.movie.NetplixMovie;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -12,8 +11,6 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.Chunk;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -24,11 +21,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class MigrateMoviesFromTmdbBatch {
+public class MigrateMoviesPlayingFromTmdbBatch {
 
-    private final static String BATCH_NAME = "MigrateMoviesFromTmdbBatch";
+    private final static String BATCH_NAME = "MigrateMoviesPlayingFromTmdbBatch";
 
-    private final FetchMovieUseCase fetchMovieUseCase;
+    private final fast.campus.netplix.movie.TmdbMoviePlayingPort tmdbMoviePlayingPort;
     private final InsertMovieUseCase insertMovieUseCase;
 
     @Bean(name = BATCH_NAME)
@@ -39,14 +36,14 @@ public class MigrateMoviesFromTmdbBatch {
                 .build();
     }
 
-    @Bean(name = "MigrateMoviesFromTmdbBatchTaskletStep")
+    @Bean(name = "MigrateMoviesPlayingFromTmdbBatchTaskletStep")
     public Step step(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
-        return new StepBuilder("MigrateMoviesFromTmdbBatchTaskletStep", jobRepository)
+        return new StepBuilder("MigrateMoviesPlayingFromTmdbBatchTaskletStep", jobRepository)
                 .chunk(5, platformTransactionManager)
-                .reader(new HttpPageItemReader(1, 25, fetchMovieUseCase))  // 25페이지만 처리(특정 영화에서 DB 멈춤 회피)
+                .reader(new HttpPageItemReaderForMovies(31, tmdbMoviePlayingPort))  // 31페이지만 처리(32페이지 구간에서 멈춤 회피)
                 .writer(chunk -> {
                     List<NetplixMovie> items = (List<NetplixMovie>) chunk.getItems();
-                    log.info("========== Processing {} movies ==========", items.size());
+                    log.info("========== Processing {} movies (MOVIE) ==========", items.size());
                     
                     // Filter out movies with corrupted Korean text
                     List<NetplixMovie> validItems = items.stream()
@@ -79,10 +76,7 @@ public class MigrateMoviesFromTmdbBatch {
         }
         
         // Filter out movies with corrupted Korean text
-        // Corrupted Korean contains CJK Chinese characters (蹂, 議, etc.)
-        // instead of proper Korean characters
         for (char c : overview.toCharArray()) {
-            // Check if character is CJK Chinese ideograph (not Korean)
             if (c >= '\u4E00' && c <= '\u9FFF') {
                 log.info("Filtering movie with corrupted Korean: {} - {}", 
                     movie.getMovieName(), overview.substring(0, Math.min(50, overview.length())));

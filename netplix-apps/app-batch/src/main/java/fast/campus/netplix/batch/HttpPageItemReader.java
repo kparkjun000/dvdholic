@@ -17,16 +17,19 @@ public class HttpPageItemReader extends AbstractItemCountingItemStreamItemReader
     private boolean hasNext = true;
     private static final int MAX_PAGE = 500; // TMDB API 최대 페이지
 
+    private final int maxPageLimit;  // 이번 배치에서 처리할 최대 페이지 수
     private final FetchMovieUseCase fetchMovieUseCase;
 
-    public HttpPageItemReader(int page, FetchMovieUseCase fetchMovieUseCase) {
-        this.page = page;
+    /** @param startPage 시작 페이지 (1부터), maxPageLimit 최대 처리 페이지 수 (예: 50) */
+    public HttpPageItemReader(int startPage, int maxPageLimit, FetchMovieUseCase fetchMovieUseCase) {
+        this.page = startPage;
+        this.maxPageLimit = Math.min(maxPageLimit, MAX_PAGE);
         this.fetchMovieUseCase = fetchMovieUseCase;
     }
 
     @Override
     protected NetplixMovie doRead() {
-        if (this.contents.isEmpty() && hasNext && page <= MAX_PAGE) {
+        if (this.contents.isEmpty() && hasNext && page <= maxPageLimit) {
             readRow();
         }
 

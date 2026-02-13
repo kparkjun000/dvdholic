@@ -19,13 +19,11 @@ function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 관리
   const location = useLocation();
 
+  // 경로 변경 시(카카오 로그인 후 /dashboard 이동 포함) 토큰 재확인
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("token=", token);
-    if (token) {
-      setIsLoggedIn(true);
-    }
-  }, []);
+    setIsLoggedIn(!!token);
+  }, [location.pathname]);
 
   const handleLogout = async (e) => {
     e.preventDefault();
@@ -103,6 +101,18 @@ function AppContent() {
               flex: "0 0 auto",
             }}
           >
+            <span
+              style={{
+                fontSize: "20px",
+                fontWeight: "bold",
+                color: "#E50914",
+                lineHeight: "40px",
+                fontFamily:
+                  "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
+              }}
+            >
+              MOVIE+
+            </span>
             <img
               src="/icons8-dvd-logo-100.png"
               alt="DVD Logo"
@@ -150,7 +160,7 @@ function AppContent() {
                   whiteSpace: "nowrap",
                 }}
               >
-                HOT🔥 최신 DVD 매일 자동 업데이트!! (새벽 2시)
+                HOT🔥 최신 MOVIE+ DVD 매일 자동 업데이트!! (새벽 2시)
               </span>
             </div>
           )}

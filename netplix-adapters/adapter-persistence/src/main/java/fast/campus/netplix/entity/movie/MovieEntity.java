@@ -69,6 +69,24 @@ public class MovieEntity extends MutableBaseEntity {
     @Column(name = "REVENUE")
     private Long revenue;
 
+    @Column(name = "CONTENT_TYPE")
+    private String contentType;
+
+    @Column(name = "TRAILER_URL", length = 500)
+    private String trailerUrl;
+
+    @Column(name = "OTT_PROVIDERS", length = 500)
+    private String ottProviders;
+
+    @Column(name = "COLLECTION_NAME", length = 500)
+    private String collectionName;
+
+    @Column(name = "RECOMMENDATIONS", columnDefinition = "TEXT")
+    private String recommendations;
+
+    @Column(name = "TOP_REVIEW", columnDefinition = "TEXT")
+    private String topReview;
+
     public NetplixMovie toDomain() {
         return NetplixMovie.builder()
                 .movieName(this.movieName)
@@ -86,6 +104,12 @@ public class MovieEntity extends MutableBaseEntity {
                 .certification(this.certification)
                 .budget(this.budget)
                 .revenue(this.revenue)
+                .contentType(this.contentType)
+                .trailerUrl(this.trailerUrl)
+                .ottProviders(this.ottProviders)
+                .collection(this.collectionName)
+                .recommendations(this.recommendations)
+                .topReview(this.topReview)
                 .build();
     }
 
@@ -106,7 +130,13 @@ public class MovieEntity extends MutableBaseEntity {
                 netplixMovie.getReleaseDate(),
                 netplixMovie.getCertification(),
                 netplixMovie.getBudget(),
-                netplixMovie.getRevenue()
+                netplixMovie.getRevenue(),
+                netplixMovie.getContentType(),
+                netplixMovie.getTrailerUrl(),
+                netplixMovie.getOttProviders(),
+                netplixMovie.getCollection(),
+                netplixMovie.getRecommendations(),
+                netplixMovie.getTopReview()
         );
     }
 

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Axios 기본 설정
-axios.defaults.baseURL = "http://localhost:8080";
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || "http://localhost:8080";
 
 // Request Interceptor: 모든 요청에 자동으로 토큰 추가
 axios.interceptors.request.use(

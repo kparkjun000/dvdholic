@@ -26,6 +26,15 @@ public class MovieRepository implements PersistenceMoviePort {
     }
 
     @Override
+    @Transactional
+    public List<NetplixMovie> fetchByContentType(String contentType, int page, int size) {
+        return movieJpaRepository.searchByContentType(contentType, PageRequest.of(page, size))
+                .stream()
+                .map(MovieEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public NetplixMovie findBy(String movieName) {
         return movieJpaRepository.findByMovieName(movieName)
                 .map(MovieEntity::toDomain)

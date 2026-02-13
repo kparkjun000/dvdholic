@@ -26,6 +26,13 @@ public class MovieController {
         return NetplixApiResponse.ok(fetch);
     }
 
+    @PostMapping("/playing/search")
+    @PreAuthorize("hasAnyRole('ROLE_FREE', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD')")
+    public NetplixApiResponse<MoviePageableResponse> searchMovies(@RequestParam int page) {
+        MoviePageableResponse fetch = fetchMovieUseCase.fetchMoviesFromClient(page);
+        return NetplixApiResponse.ok(fetch);
+    }
+
     @PostMapping("/{movieName}/download")
     @PreAuthorize("hasAnyRole('ROLE_FREE', 'ROLE_BRONZE', 'ROLE_SILVER', 'ROLE_GOLD')")
     public NetplixApiResponse<MovieResponse> download(@PathVariable String movieName) {
