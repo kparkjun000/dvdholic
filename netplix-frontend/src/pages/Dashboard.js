@@ -223,6 +223,8 @@ function Dashboard() {
           onClick={() => {
             setContentType("movie");
             setPage(0);
+            setMovies([]);
+            setListError(null);
             getPlayingMovies(0);
           }}
           style={{
@@ -254,6 +256,8 @@ function Dashboard() {
           onClick={() => {
             setContentType("dvd");
             setPage(0);
+            setMovies([]);
+            setListError(null);
             getMovies(0);
           }}
           style={{
@@ -384,7 +388,7 @@ function Dashboard() {
 
             return (
               <div
-                key={item.movieName}
+                key={`${contentType}-${item.movieName}-${index}`}
                 style={{
                   backgroundColor: "#1f1f1f",
                   borderRadius: "8px",
