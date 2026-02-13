@@ -19,7 +19,8 @@ function Login({ setIsLoggedIn }) {
       });
 
       if (!response.data.success) {
-        alert("로그인 실패. " + response.data.code);
+        const msg = response.data.message || response.data.code || "알 수 없는 오류";
+        alert("로그인 실패. " + msg);
       } else {
         // 응답이 성공하면 로그인 처리 (토큰 저장 등)
         // 예: localStorage에 토큰 저장
@@ -31,9 +32,12 @@ function Login({ setIsLoggedIn }) {
         navigate("/dashboard");
       }
     } catch (error) {
-      // 오류 처리
       console.error("Login failed:", error);
-      alert("로그인 실패: 사용자 정보가 일치하지 않습니다.");
+      const serverMsg = error.response?.data?.message || error.response?.data?.code;
+      const displayMsg = serverMsg
+        ? "로그인 실패. " + serverMsg
+        : "로그인 실패: 이메일 또는 비밀번호를 확인해 주세요.";
+      alert(displayMsg);
     }
   };
 
