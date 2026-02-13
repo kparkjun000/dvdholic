@@ -22,11 +22,22 @@ public class SpaResourceConfig implements WebMvcConfigurer {
                 .addResolver(new PathResourceResolver() {
                     @Override
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
+                        if (resourcePath == null || resourcePath.isEmpty() || resourcePath.equals("/")) {
+                            return getIndexHtml(location);
+                        }
                         Resource resource = location.createRelative(resourcePath);
                         if (resource.exists() && resource.isReadable()) {
                             return resource;
                         }
-                        return location.createRelative("index.html");
+                        return getIndexHtml(location);
+                    }
+
+                    private Resource getIndexHtml(Resource location) throws IOException {
+                        Resource index = location.createRelative("index.html");
+                        if (index.exists() && index.isReadable()) {
+                            return index;
+                        }
+                        return null;
                     }
                 });
     }
