@@ -42,17 +42,33 @@ Heroku 대시보드 → dvdholic → Settings → Config Vars 에서 아래 추�
 | `JWT_SECRET` | JWT 서명 시크릿 (32자 이상) |
 | `AES_SECRET` | AES 암호화 시크릿 |
 
-**카카오 관련:** Circular reference 방지를 위해 위 세 개의 **긴 이름(SPRING_SECURITY_...)** 으로 설정해야 합니다. 기존에 `KAKAO_CLIENT_ID` 등으로 넣었다면, 같은 값을 위 Key로 **추가**한 뒤 저장하면 됩니다.
+**카카오 관련:** Circular reference 방지를 위해 위 세 개의 **긴 이름(SPRING_SECURITY_...)** 으로 설정해야 합니다.
 
-DB/Redis는 Heroku add-on 사용 시 URL이 자동으로 설정되는 경우가 있음. MySQL은 ClearDB 등 add-on 추가 후 `DATABASE_URL` 또는 별도 호스트/비밀번호 변수로 설정.
+**DB 관련:** 로컬은 Docker MySQL(`localhost`) 그대로 사용. Heroku는 아래 5절처럼 add-on 추가 후 `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` 설정.
 
-## 5. DB 연결 (Heroku에서 MySQL 쓰는 경우)
+## 5. DB 연결 (Heroku용 MySQL – 로컬 Docker와 별도)
 
-- ClearDB MySQL add-on 추가: `heroku addons:create cleardb:ignite -a dvdholic`
-- 추가 후 `heroku config -a dvdholic` 에서 `CLEARDB_DATABASE_URL` 확인
-- Spring은 `spring.datasource.url` 등으로 연결. ClearDB URL 형식에 맞게 `jdbc-url`를 환경 변수로 넣거나, adapter-persistence에서 `DATABASE_URL` 파싱하도록 설정 가능.
+로컬은 Docker MySQL, Heroku는 클라우드 MySQL이 필요합니다 (Heroku dyno는 로컬 `localhost`에 접속 불가).
 
-로컬 MySQL을 그대로 쓰려면 Heroku Config Vars에 `DB_HOST`, `DB_PORT`, `DB_NAME` 등을 로컬/원격 DB 정보로 넣으면 됨. (보안상 프로덕션은 Heroku add-on 권장)
+1. **JawsDB MySQL add-on 추가** (무료 플랜 있음):
+   ```bash
+   heroku addons:create jawsdb:kite -a dvdholic
+   ```
+2. **Config Vars 확인** 후 URL에서 값 추출:
+   ```bash
+   heroku config -a dvdholic
+   ```
+   `JAWSDB_URL` 이 생김 (형식: `mysql://사용자:비밀번호@호스트:3306/DB이름`).  
+   이 값에서 아래처럼 Config Vars에 **추가/수정**:
+   - `DB_HOST` = 호스트 부분 (예: `xxx.mysql.rds.amazonaws.com`)
+   - `DB_PORT` = `3306`
+   - `DB_NAME` = DB 이름 (예: `heroku_xxxx`)
+   - `DB_USERNAME` = 사용자 (로컬용 root 대신 JawsDB 사용자로 변경)
+   - `DB_PASSWORD` = 비밀번호 (JawsDB 비밀번호로 변경)
+3. **(필요 시)** JawsDB에서 연결이 안 되면 SSL 사용:  
+   `heroku config:set DB_USE_SSL=true -a dvdholic`
+4. **코드 푸시** 후 재배포: `adapter-persistence-property.yml`에 `DB_HOST`, `DB_PORT`, `DB_NAME` 반영된 버전이 Heroku에 있어야 함.  
+   `git push heroku main` 후 `heroku restart -a dvdholic`
 
 ## 6. Redis (필요 시)
 
