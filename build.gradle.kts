@@ -181,6 +181,27 @@ configureByLabels("querydsl") {
     }
 }
 
+// Heroku 배포: 프론트 빌드 결과를 app-api static으로 복사 후 bootJar에 포함
+val copyFrontendToApi by tasks.registering {
+    val appApi = project(":netplix-apps:app-api")
+    dependsOn(appApi.tasks.named("processResources"))
+    doLast {
+        val frontendBuild = file("netplix-frontend/build")
+        val dest = file("netplix-apps/app-api/build/resources/main/static")
+        if (frontendBuild.exists()) {
+            dest.mkdirs()
+            copy {
+                from(frontendBuild)
+                into(dest)
+            }
+        }
+    }
+}
+
+project(":netplix-apps:app-api").tasks.named("bootJar").configure {
+    dependsOn(copyFrontendToApi)
+}
+
 // Heroku 배포: API jar를 루트 build/libs로 복사 (Procfile에서 사용)
 tasks.register("stage") {
     dependsOn(":netplix-apps:app-api:bootJar")

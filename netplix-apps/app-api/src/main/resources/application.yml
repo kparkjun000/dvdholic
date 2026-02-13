@@ -1,4 +1,7 @@
 spring:
+  web:
+    resources:
+      add-mappings: false  # SPA 폴백만 SpaResourceConfig에서 처리(동일 오리진 배포 시)
   config:
     import:
       - 'classpath:adapter-http-property.yml'

@@ -42,13 +42,11 @@ public class SecurityConfig {
         httpSecurity.sessionManagement(session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // API: 일부 경로 permitAll, 나머지 인증 필요 / 비 API(SPA·정적): 모두 permitAll
         httpSecurity.authorizeHttpRequests(a ->
-                a.requestMatchers("/",
-                                "/register",
-                                "/api/v1/user/**",
-                                "/api/v1/auth/**"
-                        ).permitAll()
-                        .anyRequest().authenticated());
+                a.requestMatchers("/api/v1/user/**", "/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll());
         
         // OAuth2 로그인 설정 (카카오 로그인용)
         httpSecurity.oauth2Login(oauth2 -> oauth2
