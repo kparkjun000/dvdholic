@@ -36,11 +36,13 @@ Heroku 대시보드 → dvdholic → Settings → Config Vars 에서 아래 추�
 | `DB_PASSWORD` | MySQL 비밀번호 |
 | `DB_USERNAME` | MySQL 사용자 (기본 root) |
 | `TMDB_API_KEY` | TMDB API 키 |
-| `KAKAO_CLIENT_ID` | 카카오 앱 클라이언트 ID |
-| `KAKAO_CLIENT_SECRET` | 카카오 앱 시크릿 |
-| `KAKAO_REDIRECT_URI` | `https://dvdholic.herokuapp.com/login/oauth2/code/kakao` |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID` | 카카오 REST API 키 (기존 KAKAO_CLIENT_ID 값과 동일) |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET` | 카카오 Client Secret (기존 KAKAO_CLIENT_SECRET 값과 동일) |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI` | `https://dvdholic.herokuapp.com/login/oauth2/code/kakao` |
 | `JWT_SECRET` | JWT 서명 시크릿 (32자 이상) |
 | `AES_SECRET` | AES 암호화 시크릿 |
+
+**카카오 관련:** Circular reference 방지를 위해 위 세 개의 **긴 이름(SPRING_SECURITY_...)** 으로 설정해야 합니다. 기존에 `KAKAO_CLIENT_ID` 등으로 넣었다면, 같은 값을 위 Key로 **추가**한 뒤 저장하면 됩니다.
 
 DB/Redis는 Heroku add-on 사용 시 URL이 자동으로 설정되는 경우가 있음. MySQL은 ClearDB 등 add-on 추가 후 `DATABASE_URL` 또는 별도 호스트/비밀번호 변수로 설정.
 
