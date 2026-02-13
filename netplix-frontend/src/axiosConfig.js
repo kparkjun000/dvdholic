@@ -17,18 +17,22 @@ axios.interceptors.request.use(
   }
 );
 
-// Response Interceptor: 401 에러 시 로그인 페이지로 리다이렉트
+// Response Interceptor: 401 에러 시 로그인 페이지로 리다이렉트 (단, 공개 API는 제외)
 axios.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.error("인증 실패: 로그인이 필요합니다.");
-      localStorage.removeItem("token");
-      localStorage.removeItem("refresh_token");
-      // 로그인 페이지로 리다이렉트
-      window.location.href = "/login";
+      const url = error.config?.url || "";
+      const isPublicMovieApi =
+        url.includes("/api/v1/movie/search") || url.includes("/api/v1/movie/playing/search");
+      if (!isPublicMovieApi) {
+        console.error("인증 실패: 로그인이 필요합니다.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
