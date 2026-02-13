@@ -42,9 +42,10 @@ public class SecurityConfig {
         httpSecurity.sessionManagement(session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        // API: 일부 경로 permitAll, 나머지 인증 필요 / 비 API(SPA·정적): 모두 permitAll
+        // API: 인증 불필요(공개) 경로 permitAll, 나머지 인증 필요 / 비 API(SPA·정적): 모두 permitAll
         httpSecurity.authorizeHttpRequests(a ->
                 a.requestMatchers("/api/v1/user/**", "/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/movie/search", "/api/v1/movie/playing/search").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll());
         
