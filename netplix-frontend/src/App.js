@@ -25,6 +25,13 @@ function AppContent() {
     setIsLoggedIn(!!token);
   }, [location.pathname]);
 
+  // 카카오 OAuth2 리다이렉트 후 Dashboard에서 토큰 저장 시 로그인 상태 갱신
+  useEffect(() => {
+    const onTokenStored = () => setIsLoggedIn(!!localStorage.getItem("token"));
+    window.addEventListener("token-stored", onTokenStored);
+    return () => window.removeEventListener("token-stored", onTokenStored);
+  }, []);
+
   const handleLogout = async (e) => {
     e.preventDefault();
     try {

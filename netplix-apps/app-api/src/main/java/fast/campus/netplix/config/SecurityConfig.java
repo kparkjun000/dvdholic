@@ -28,6 +28,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final NetplixUserDetailsService netplixUserDetailsService;
+    private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
 
     private final PublicMovieListRequestFilter publicMovieListRequestFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -51,8 +52,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll());
         
-        // OAuth2 로그인 설정 (카카오 로그인용)
+        // OAuth2 로그인 설정 (카카오 로그인용) - 성공 시 JWT 발급 후 /dashboard 로 리다이렉트
         httpSecurity.oauth2Login(oauth2 -> oauth2
+                .successHandler(oauth2LoginSuccessHandler)
                 .failureUrl("/login?error=true")
         );
         

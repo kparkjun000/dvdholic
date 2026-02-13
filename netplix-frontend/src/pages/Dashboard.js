@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import axios from "../axiosConfig";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -10,6 +11,20 @@ function getListBaseUrl() {
 }
 
 function Dashboard() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 카카오 OAuth2 로그인 성공 후 리다이렉트 시 URL에 token이 있으면 저장하고 URL 정리
+  useEffect(() => {
+    const token = searchParams.get("token");
+    const refreshToken = searchParams.get("refresh_token");
+    if (token) {
+      localStorage.setItem("token", token);
+      if (refreshToken) localStorage.setItem("refresh_token", refreshToken);
+      setSearchParams({}); // 쿼리 제거 (주소창에서 토큰 제거)
+      window.dispatchEvent(new CustomEvent("token-stored"));
+    }
+  }, [searchParams, setSearchParams]);
+
   const [page, setPage] = useState(0);
   const [movies, setMovies] = useState([]);
   const [hasNext, setHasNext] = useState(false);
