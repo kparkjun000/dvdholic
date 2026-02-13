@@ -1,5 +1,8 @@
 package fast.campus.netplix.controller;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -9,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.io.IOException;
+
 /**
  * SPA 클라이언트 라우트 요청 시 index.html로 포워드.
- * index.html이 없을 때 forward하면 500이 나므로, 있을 때만 forward하고 없으면 404.
+ * 뷰 이름 "forward:/index.html"은 ViewResolver 미설정 시 500을 유발하므로 RequestDispatcher로 직접 포워드.
  */
 @Controller
 public class SpaForwardController {
@@ -31,10 +36,11 @@ public class SpaForwardController {
             "/main",
             "/login/oauth2/code/kakao"
     })
-    public Object forwardToIndex() {
+    public Object forwardToIndex(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Resource index = resourceLoader.getResource("classpath:/static/index.html");
         if (index.exists() && index.isReadable()) {
-            return "forward:/index.html";
+            request.getRequestDispatcher("/index.html").forward(request, response);
+            return null;
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
