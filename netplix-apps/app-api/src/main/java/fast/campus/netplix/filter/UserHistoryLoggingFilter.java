@@ -38,6 +38,9 @@ public class UserHistoryLoggingFilter extends OncePerRequestFilter {
     }
 
     public void log(Authentication authentication, HttpServletRequest httpServletRequest) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return;
+        }
         logUserAuditHistoryUseCase.log(
                 new CreateAuditLog(
                         authentication.getName(),
